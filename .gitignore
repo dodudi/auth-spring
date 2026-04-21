@@ -64,6 +64,7 @@ Thumbs.db
 *.war
 *.ear
 !maven/wrapper/maven-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # Logs
 logs/
