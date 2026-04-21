@@ -9,6 +9,7 @@ auth:
     redirect-uri: ${OAUTH2_REDIRECT_URI}
     post-logout-redirect-uri: ${OAUTH2_POST_LOGOUT_REDIRECT_URI}
     login-redirect-uri: ${OAUTH2_LOGIN_REDIRECT_URI}
+  allowed-origins: ${OAUTH2_ALLOWED_ORIGINS}
 spring:
   datasource:
     url: ${DB_URL}
