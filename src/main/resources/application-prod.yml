@@ -1,0 +1,41 @@
+auth:
+  issuer-uri: ${AUTH_ISSUER_URI}
+  rsa:
+    private-key: ${RSA_PRIVATE_KEY}
+    public-key: ${RSA_PUBLIC_KEY}
+  client:
+    id: ${OAUTH2_CLIENT_ID}
+    secret: ${OAUTH2_CLIENT_SECRET}
+    redirect-uri: ${OAUTH2_REDIRECT_URI}
+    post-logout-redirect-uri: ${OAUTH2_POST_LOGOUT_REDIRECT_URI}
+    login-redirect-uri: ${OAUTH2_LOGIN_REDIRECT_URI}
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+  h2:
+    console:
+      enabled: false
+  jpa:
+    show-sql: false
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: profile, email
+logging:
+  level:
+    com.auth: INFO
+    org.springframework.security: WARN
