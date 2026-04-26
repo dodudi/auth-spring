@@ -3,6 +3,7 @@ package com.auth.config;
 import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
 import com.auth.security.property.ClientProperty;
 import com.auth.security.property.RsaProperty;
+import com.auth.user.domain.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -121,9 +122,9 @@ public class AuthorizationServerConfig {
         return AuthorizationServerSettings.builder().build();
     }
 
-    // Access Token에 사용자 role을 포함시킨다
+    // Access Token에 사용자 role과 UUID를 포함시킨다
     @Bean
-    public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer(UserRepository userRepository) {
         return context -> {
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 Authentication principal = context.getPrincipal();
@@ -131,6 +132,9 @@ public class AuthorizationServerConfig {
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toSet());
                 context.getClaims().claim("roles", roles);
+
+                userRepository.findByEmail(principal.getName())
+                        .ifPresent(user -> context.getClaims().claim("user_id", user.getId().toString()));
             }
         };
     }
