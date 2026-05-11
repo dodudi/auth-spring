@@ -90,6 +90,7 @@ public class AuthorizationServerConfig {
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .redirectUri(clientProperty.getRedirectUri())
                 .postLogoutRedirectUri(clientProperty.getPostLogoutRedirectUri())
                 .scope(OidcScopes.OPENID)
@@ -101,6 +102,7 @@ public class AuthorizationServerConfig {
                 )
                 .tokenSettings(TokenSettings.builder()
                         .accessTokenTimeToLive(Duration.ofHours(1))
+                        .refreshTokenTimeToLive(Duration.ofDays(30))
                         .build())
                 .build();
         repository.save(client);
