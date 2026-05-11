@@ -1,7 +1,6 @@
 package com.auth.config;
 
 import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
-import com.auth.security.property.ClientProperty;
 import com.auth.security.property.RsaProperty;
 import com.auth.user.domain.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -28,7 +27,6 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.util.Set;
@@ -39,12 +37,13 @@ import java.util.stream.Collectors;
 public class AuthorizationServerConfig {
 
     private final RsaProperty rsaProperty;
-    private final ClientProperty clientProperty;
     private final CustomAuthorizationServerFailureHandler customAuthorizationServerFailureHandler;
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(
+            HttpSecurity http,
+            RegisteredClientRepository registeredClientRepository) {
         http
                 .oauth2AuthorizationServer(authorizationServer -> {
                     http.securityMatcher(authorizationServer.getEndpointsMatcher());
@@ -56,7 +55,7 @@ public class AuthorizationServerConfig {
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint(clientProperty.getLoginRedirectUri()),
+                                new ClientAwareLoginUrlAuthenticationEntryPoint(registeredClientRepository),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 );

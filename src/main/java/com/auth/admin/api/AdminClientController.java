@@ -9,12 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.HashSet;
 
 @Controller
 @RequiredArgsConstructor
@@ -64,13 +62,14 @@ public class AdminClientController {
 
         ClientUpdateRequest form = new ClientUpdateRequest();
         form.setClientName(detail.clientName());
-        form.setGrantTypes(new java.util.HashSet<>(detail.grantTypes()));
-        form.setScopes(new java.util.HashSet<>(detail.scopes()));
+        form.setGrantTypes(new HashSet<>(detail.grantTypes()));
+        form.setScopes(new HashSet<>(detail.scopes()));
         form.setRedirectUrisRaw(detail.redirectUrisRaw());
         form.setPostLogoutRedirectUrisRaw(detail.postLogoutRedirectUrisRaw());
         form.setRequirePkce(detail.requirePkce());
         form.setAccessTokenTtlMinutes(detail.accessTokenTtlMinutes());
         form.setRefreshTokenTtlDays(detail.refreshTokenTtlDays());
+        form.setLoginPageUri(detail.loginPageUri());
         model.addAttribute("form", form);
 
         return "admin/clients/edit";

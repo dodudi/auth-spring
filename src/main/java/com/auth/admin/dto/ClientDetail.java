@@ -12,5 +12,6 @@ public record ClientDetail(
         String postLogoutRedirectUrisRaw,
         boolean requirePkce,
         int accessTokenTtlMinutes,
-        int refreshTokenTtlDays
+        int refreshTokenTtlDays,
+        String loginPageUri
 ) {}

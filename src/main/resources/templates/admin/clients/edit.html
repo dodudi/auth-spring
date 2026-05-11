@@ -28,6 +28,15 @@
             </div>
 
             <div class="form-group">
+                <label for="loginPageUri">
+                    로그인 페이지 URI <span class="label-hint">미인증 시 이 주소로 리디렉트</span>
+                </label>
+                <input type="text" id="loginPageUri" th:field="*{loginPageUri}"/>
+                <div class="field-error" th:if="${#fields.hasErrors('loginPageUri')}"
+                     th:errors="*{loginPageUri}"></div>
+            </div>
+
+            <div class="form-group">
                 <label>Grant Types</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label">

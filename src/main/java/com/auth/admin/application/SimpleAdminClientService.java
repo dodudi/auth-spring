@@ -70,6 +70,7 @@ public class SimpleAdminClientService implements AdminClientManagement {
                 .clientSettings(ClientSettings.builder()
                         .requireProofKey(request.isRequirePkce())
                         .requireAuthorizationConsent(true)
+                        .setting("loginPageUri", request.getLoginPageUri())
                         .build())
                 .tokenSettings(TokenSettings.builder()
                         .accessTokenTimeToLive(Duration.ofMinutes(request.getAccessTokenTtlMinutes()))
@@ -112,6 +113,7 @@ public class SimpleAdminClientService implements AdminClientManagement {
                 .clientSettings(ClientSettings.builder()
                         .requireProofKey(request.isRequirePkce())
                         .requireAuthorizationConsent(true)
+                        .setting("loginPageUri", request.getLoginPageUri())
                         .build())
                 .tokenSettings(TokenSettings.builder()
                         .accessTokenTimeToLive(Duration.ofMinutes(request.getAccessTokenTtlMinutes()))
@@ -152,6 +154,7 @@ public class SimpleAdminClientService implements AdminClientManagement {
                 .map(AuthorizationGrantType::getValue)
                 .collect(Collectors.toSet());
 
+        String loginPageUri = client.getClientSettings().getSetting("loginPageUri");
         return new ClientDetail(
                 client.getId(),
                 client.getClientId(),
@@ -162,7 +165,8 @@ public class SimpleAdminClientService implements AdminClientManagement {
                 String.join("\n", client.getPostLogoutRedirectUris()),
                 client.getClientSettings().isRequireProofKey(),
                 (int) client.getTokenSettings().getAccessTokenTimeToLive().toMinutes(),
-                (int) client.getTokenSettings().getRefreshTokenTimeToLive().toDays()
+                (int) client.getTokenSettings().getRefreshTokenTimeToLive().toDays(),
+                loginPageUri != null ? loginPageUri : ""
         );
     }
 

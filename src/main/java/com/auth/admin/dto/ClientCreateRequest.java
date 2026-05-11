@@ -21,6 +21,9 @@ public class ClientCreateRequest {
     @NotBlank
     private String clientName;
 
+    @NotBlank
+    private String loginPageUri = "";
+
     private Set<String> grantTypes = new HashSet<>();
 
     private Set<String> scopes = new HashSet<>();

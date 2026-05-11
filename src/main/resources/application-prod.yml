@@ -3,8 +3,6 @@ auth:
   rsa:
     private-key: ${RSA_PRIVATE_KEY}
     public-key: ${RSA_PUBLIC_KEY}
-  client:
-    login-redirect-uri: ${OAUTH2_LOGIN_REDIRECT_URI}
   allowed-origins: ${OAUTH2_ALLOWED_ORIGINS}
 spring:
   datasource:

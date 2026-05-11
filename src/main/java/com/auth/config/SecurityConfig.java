@@ -1,8 +1,6 @@
 package com.auth.config;
 
 import com.auth.security.application.SocialOAuth2UserService;
-import com.auth.security.property.ClientProperty;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,13 +19,10 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${auth.allowed-origins}")
     private String allowedOrigins;
-
-    private final ClientProperty clientProperty;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -54,7 +49,6 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage(clientProperty.getLoginRedirectUri())
                         .successHandler(successHandler)
                         .failureHandler(failureHandler)
                         .userInfoEndpoint(userInfo -> userInfo
