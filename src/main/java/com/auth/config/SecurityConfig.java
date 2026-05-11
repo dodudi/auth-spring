@@ -1,6 +1,8 @@
 package com.auth.config;
 
 import com.auth.security.application.SocialOAuth2UserService;
+import com.auth.security.handler.JsonAuthenticationFailureHandler;
+import com.auth.security.handler.JsonAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,12 +45,14 @@ public class SecurityConfig {
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
+                        .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler(successHandler)
                         .failureHandler(failureHandler)
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
                         .successHandler(successHandler)
                         .failureHandler(failureHandler)
                         .userInfoEndpoint(userInfo -> userInfo

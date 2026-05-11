@@ -1,5 +1,6 @@
 package com.auth.config;
 
+import com.auth.security.handler.ClientAwareLoginUrlAuthenticationEntryPoint;
 import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
 import com.auth.security.property.RsaProperty;
 import com.auth.user.domain.UserRepository;
