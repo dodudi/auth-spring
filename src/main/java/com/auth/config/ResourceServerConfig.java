@@ -16,7 +16,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class ResourceServerConfig {
 
     @Bean
-    @Order(2)
+    @Order(3)
     public SecurityFilterChain resourceServerSecurityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
                 .securityMatcher("/api/**")

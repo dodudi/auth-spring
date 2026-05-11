@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout/base :: head('클라이언트 목록')}"></head>
+<body>
+
+<nav th:replace="~{admin/layout/base :: nav}"></nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title" style="margin-bottom:0;">등록된 클라이언트</h1>
+        <a href="/admin/clients/new" class="btn btn-primary">+ 새 클라이언트</a>
+    </div>
+
+    <div class="card">
+        <div th:if="${#lists.isEmpty(clients)}"
+             style="text-align:center; padding:2rem; color:#71717a; font-size:0.875rem;">
+            등록된 클라이언트가 없습니다.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(clients)}">
+            <thead>
+            <tr>
+                <th>Client ID</th>
+                <th>이름</th>
+                <th>Grant Types</th>
+                <th>Scopes</th>
+                <th>등록일</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="client : ${clients}">
+                <td class="code" th:text="${client.clientId}"></td>
+                <td th:text="${client.clientName}"></td>
+                <td style="font-size:0.8125rem; color:#52525b;" th:text="${client.authorizationGrantTypes}"></td>
+                <td style="font-size:0.8125rem; color:#52525b;" th:text="${client.scopes}"></td>
+                <td style="font-size:0.8125rem; color:#71717a;"
+                    th:text="${#temporals.format(client.issuedAt, 'yyyy-MM-dd', 'UTC')}"></td>
+                <td>
+                    <div class="action-group">
+                        <a th:href="@{/admin/clients/{id}/edit(id=${client.id})}"
+                           class="btn btn-secondary">수정</a>
+
+                        <form th:action="@{/admin/clients/{id}/regenerate-secret(id=${client.id})}"
+                              method="post"
+                              onsubmit="return confirm('Secret을 재발급하면 기존 Secret은 즉시 무효화됩니다. 계속하시겠습니까?')">
+                            <button type="submit" class="btn btn-warning">Secret 재발급</button>
+                        </form>
+
+                        <form th:action="@{/admin/clients/{id}/delete(id=${client.id})}"
+                              method="post"
+                              onsubmit="return confirm('클라이언트를 삭제하면 복구할 수 없습니다. 계속하시겠습니까?')">
+                            <button type="submit" class="btn btn-danger">삭제</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

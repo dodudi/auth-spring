@@ -35,7 +35,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(3)
+    @Order(4)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService) throws Exception {
         JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler();
         JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler();
@@ -56,6 +56,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage(clientProperty.getLoginRedirectUri())
                         .successHandler(successHandler)
+                        .failureHandler(failureHandler)
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(socialOAuth2UserService)
                         )
