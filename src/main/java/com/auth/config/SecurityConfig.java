@@ -3,6 +3,7 @@ package com.auth.config;
 import com.auth.security.application.SocialOAuth2UserService;
 import com.auth.security.handler.JsonAuthenticationFailureHandler;
 import com.auth.security.handler.JsonAuthenticationSuccessHandler;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,9 +34,9 @@ public class SecurityConfig {
 
     @Bean
     @Order(4)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService) throws Exception {
-        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler();
-        JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler();
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper) throws Exception {
+        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper);
+        JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper);
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

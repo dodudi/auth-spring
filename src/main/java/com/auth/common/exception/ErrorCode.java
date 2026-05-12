@@ -22,6 +22,7 @@ public enum ErrorCode {
     ACCOUNT_SUSPENDED(HttpStatus.FORBIDDEN, "U005", "정지된 계정입니다."),
     ACCOUNT_WITHDRAWN(HttpStatus.FORBIDDEN, "U006", "탈퇴한 계정입니다."),
     ACCOUNT_LOCKED(HttpStatus.LOCKED, "U007", "로그인 실패 횟수 초과로 계정이 잠겼습니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "U008", "아이디 또는 비밀번호가 올바르지 않습니다."),
 
     // Client
     CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CL001", "클라이언트를 찾을 수 없습니다."),

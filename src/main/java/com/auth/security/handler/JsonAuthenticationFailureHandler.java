@@ -1,14 +1,21 @@
 package com.auth.security.handler;
 
+import com.auth.common.exception.ErrorCode;
+import com.auth.common.response.ApiResponse;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 import java.io.IOException;
 
+@RequiredArgsConstructor
 public class JsonAuthenticationFailureHandler implements AuthenticationFailureHandler {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationFailure(
@@ -18,6 +25,6 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
     ) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("{\"result\":\"fail\",\"message\":\"아이디 또는 비밀번호가 올바르지 않습니다.\"}");
+        objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.INVALID_CREDENTIALS));
     }
 }
