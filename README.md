@@ -2,7 +2,163 @@
 
 Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며, Authorization Code 흐름을 제공합니다.
 
+## 목차
+1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)
+
 ---
+
+## 분리된 Security Filter Chain
+문제: 하나의 FilterChain 에서 모든 요청을 처리하여 코드가 복잡해지는 문제  
+해결: FilterChain을 기능으로 분리하여 각자 처리해야할 요청 경로를 지정해서 처리하도록 구현
+
+### Authorization Server 필터 체인 설정
+```java
+@Configuration
+@RequiredArgsConstructor
+public class AuthorizationServerConfig {
+
+    private final RsaProperty rsaProperty;
+    private final CustomAuthorizationServerFailureHandler customAuthorizationServerFailureHandler;
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain authorizationServerSecurityFilterChain(
+            HttpSecurity http,
+            RegisteredClientRepository registeredClientRepository) {
+        http
+                .oauth2AuthorizationServer(authorizationServer -> {
+                    http.securityMatcher(authorizationServer.getEndpointsMatcher());
+                    authorizationServer.oidc(Customizer.withDefaults());
+                    authorizationServer.authorizationEndpoint(endpoint -> endpoint.errorResponseHandler(customAuthorizationServerFailureHandler));
+                })
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .defaultAuthenticationEntryPointFor(
+                                new ClientAwareLoginUrlAuthenticationEntryPoint(registeredClientRepository),
+                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+                        )
+                );
+
+        return http.build();
+    }
+
+    // ... 생략
+}
+```
+
+### Admin 필터 체인 설정
+```java
+@Configuration
+public class AdminSecurityConfig {
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http) {
+        http
+                .securityMatcher("/admin/**")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/admin/login").permitAll()
+                        .anyRequest().hasRole("ADMIN")
+                )
+                .formLogin(form -> form
+                        .loginPage("/admin/login")
+                        .loginProcessingUrl("/admin/login")
+                        .defaultSuccessUrl("/admin/clients", true)
+                        .failureUrl("/admin/login?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/admin/logout")
+                        .logoutSuccessUrl("/admin/login?logout=true")
+                )
+                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
+
+        return http.build();
+    }
+
+}
+```
+
+### Resource Server 필터 체인
+```java
+@Configuration
+@EnableMethodSecurity
+public class ResourceServerConfig {
+
+    @Bean
+    @Order(3)
+    public SecurityFilterChain resourceServerSecurityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
+        http
+                .securityMatcher("/api/**")
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/api/v1/users/signup").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+                .oauth2ResourceServer((oauth2) -> oauth2
+                        .jwt((jwt) -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                );
+
+        return http.build();
+    }
+
+    // ... 생략
+}
+```
+
+### 나머지 처리 필터 체인
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Value("${auth.allowed-origins}")
+    private String allowedOrigins;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Order(4)
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper) throws Exception {
+        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper);
+        JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper);
+
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/oauth/error").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .successHandler(successHandler)
+                        .failureHandler(failureHandler)
+                        .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .successHandler(successHandler)
+                        .failureHandler(failureHandler)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(socialOAuth2UserService)
+                        )
+                );
+
+        return http.build();
+    }
+
+    // ... 생략
+}
+```
 
 ## 목차
 
