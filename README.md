@@ -16,8 +16,8 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 ### Authorization Server 필터 체인 설정
 - 해당 필터가 특정 경로의 요청을 처리할 수 있도록 securityMatcher 설정을 합니다.
 - OIDC 설정으로 ID Token을 발급 받을 수 있도록 설정합니다.
-- Access Token의 경우 권한 부여 정보를 담는 JWT 입니다.
-- ID Token의 경우 사용자의 신원을 확인할 수 있는 정보를 담는 JWT 입니다.
+- Access Token의 경우 권한 부여 정보를 담는 JWT 입니다. 주로 서버 API를 호출하기 위해 사용합니다.
+- ID Token의 경우 사용자의 신원을 확인할 수 있는 정보를 담는 JWT 입니다. 주로 클라이언트에서 사용하기 위해 발급합니다.
 ```java
 @Configuration
 @RequiredArgsConstructor
