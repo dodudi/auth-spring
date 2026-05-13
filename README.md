@@ -6,6 +6,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)
 2. [Spring Session + Redis 구현으로 인증 서버 세션 공유](#spring-session--redis-구현으로-인증-서버-세션-공유)
 3. [JWT + RSA 비대칭키](#JWT--RSA-비대칭키)
+4. [Admin 관리 페이지를 통한 Client 관리](#admin-관리-페이지를-위한-client-관리)
 ---
 
 ## 분리된 Security Filter Chain
@@ -223,6 +224,44 @@ public class AuthorizationServerConfig {
     // .. 생략
 }
 ```
+
+## Admin 관리 페이지를 통한 Client 관리
+문제: 서비스를 생성할 때마다 클라이언트 정보를 등록하고 관리해야 한다는 불편함이 존재합니다.
+해결: 관리자 페이지를 통해서 `Client ID`, `Client Secret`, `Redirect URI`, `PKCE 여부`, `Grant Type`, `Token TTL` 등 다양한 정보를 쉽게 관리하도록 구현했습니다.  
+- Client Secret 은 즉시 재발급 가능하도록 구현했으며, 기존 키는 무효화되어 해당 외부 서비스는 새롭게 발급된 키로 교체해야 합니다.
+```java
+@Configuration
+public class AdminSecurityConfig {
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http) {
+        http
+                .securityMatcher("/admin/**")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/admin/login").permitAll()
+                        .anyRequest().hasRole("ADMIN")
+                )
+                .formLogin(form -> form
+                        .loginPage("/admin/login")
+                        .loginProcessingUrl("/admin/login")
+                        .defaultSuccessUrl("/admin/clients", true)
+                        .failureUrl("/admin/login?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/admin/logout")
+                        .logoutSuccessUrl("/admin/login?logout=true")
+                )
+                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
+
+        return http.build();
+    }
+
+}
+```
+
+
 ## 목차
 
 1. [시스템 아키텍처](#시스템-아키텍처)
