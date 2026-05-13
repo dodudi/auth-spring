@@ -4,7 +4,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 
 ## 목차
 1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)
-2. [](#spring-session--redis-구현으로-인증-서버-세션-공유)
+2. [Spring Session + Redis 구현으로 인증 서버 세션 공유](#spring-session--redis-구현으로-인증-서버-세션-공유)
 ---
 
 ## 분리된 Security Filter Chain
