@@ -38,7 +38,12 @@ public class SocialOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String userNameAttributeName = userRequest.getClientRegistration()
                 .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-        SocialProvider provider = SocialProvider.valueOf(registrationId.toUpperCase());
+        SocialProvider provider;
+        try {
+            provider = SocialProvider.valueOf(registrationId.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new OAuth2AuthenticationException("Unsupported provider: " + registrationId);
+        }
         String providerId = String.valueOf((Object) oauth2User.getAttribute(userNameAttributeName));
         String email = extractEmail(oauth2User, registrationId);
         String nickname = extractNickname(oauth2User, registrationId);

@@ -5,7 +5,6 @@ import com.auth.user.application.UserService;
 import com.auth.user.dto.SignUpRequest;
 import com.auth.user.dto.UpdateNicknameRequest;
 import com.auth.user.dto.UserResponse;
-import com.auth.user.dto.VerifyEmailRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,12 +30,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> signUp(@Valid @RequestBody SignUpRequest request) {
         UserResponse response = userService.signUp(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
-    }
-
-    @PostMapping("/verify-email")
-    public ResponseEntity<ApiResponse<Void>> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
-        userService.verifyEmail(request);
-        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @GetMapping("/me")

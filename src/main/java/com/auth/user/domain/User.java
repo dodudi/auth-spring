@@ -34,9 +34,6 @@ public class User {
     @Column(nullable = false)
     private String nickname;
 
-    @Column(nullable = false)
-    private boolean emailVerified = false;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStatus status = UserStatus.ACTIVE;
@@ -66,10 +63,6 @@ public class User {
 
     public void addRole(Role role) {
         this.roles.add(role);
-    }
-
-    public void verifyEmail() {
-        this.emailVerified = true;
     }
 
     public void updateNickname(String nickname) {
