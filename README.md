@@ -18,6 +18,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 - OIDC 설정으로 ID Token을 발급 받을 수 있도록 설정합니다.
 - Access Token의 경우 권한 부여 정보를 담는 JWT 입니다. 주로 서버 API를 호출하기 위해 사용합니다.
 - ID Token의 경우 사용자의 신원을 확인할 수 있는 정보를 담는 JWT 입니다. 주로 클라이언트에서 사용하기 위해 발급합니다.
+
 ```java
 @Configuration
 @RequiredArgsConstructor
@@ -52,9 +53,14 @@ public class AuthorizationServerConfig {
     // ... 생략
 }
 ```
+#### 필터 체인 
 <img width="667" height="277" alt="image" src="https://github.com/user-attachments/assets/fd479a8e-37ec-4877-ad3a-ff55593c2e87" />
 
 ### Admin 필터 체인 설정
+- `/admin/**` 경로의 요청을 처리하도록 설정합니다.
+- ROLE_ADMIN 권한으로 설정된 토큰으로 요청할 때 사용 가능하도록 권한 설정을 진행합니다.
+- 로그인 페이지는 Security 기본 페이지가 아닌 Tymeleaf 로 구현한 커스텀 페이지를 사용하도록 구현합니다. (.loginPage)
+
 ```java
 @Configuration
 public class AdminSecurityConfig {
