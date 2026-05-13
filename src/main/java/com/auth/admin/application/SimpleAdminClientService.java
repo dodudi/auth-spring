@@ -9,6 +9,7 @@ import com.auth.admin.dto.SecretRevealResponse;
 import com.auth.common.exception.AuthException;
 import com.auth.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SimpleAdminClientService implements AdminClientManagement {
@@ -79,6 +81,7 @@ public class SimpleAdminClientService implements AdminClientManagement {
                 .build();
 
         registeredClientRepository.save(client);
+        log.info("[CLIENT_CREATE] clientId={}", client.getClientId());
         return new SecretRevealResponse(client.getId(), client.getClientId(), rawSecret);
     }
 
@@ -122,6 +125,7 @@ public class SimpleAdminClientService implements AdminClientManagement {
                 .build();
 
         registeredClientRepository.save(updated);
+        log.info("[CLIENT_UPDATE] clientId={}", existing.getClientId());
     }
 
     @Override
@@ -131,6 +135,7 @@ public class SimpleAdminClientService implements AdminClientManagement {
             throw new AuthException(ErrorCode.CLIENT_NOT_FOUND);
         }
         clientRepository.deleteById(id);
+        log.info("[CLIENT_DELETE] clientId={}", existing.getClientId());
     }
 
     @Override
@@ -146,6 +151,7 @@ public class SimpleAdminClientService implements AdminClientManagement {
                 .build();
 
         registeredClientRepository.save(updated);
+        log.info("[CLIENT_SECRET_ROTATE] clientId={}", existing.getClientId());
         return new SecretRevealResponse(id, existing.getClientId(), rawSecret);
     }
 

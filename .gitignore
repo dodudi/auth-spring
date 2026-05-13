@@ -1,30 +1,30 @@
-HELP.md
-.gradle
+### Gradle ###
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
 ### NetBeans ###
 /nbproject/private/
@@ -36,131 +36,45 @@ out/
 ### VS Code ###
 .vscode/
 
-### COUSTOM ###
-PRD.md
-.env
-docker/postgres-data/*
-docker/redis-data/*
-
-
-# Gradle
-.gradle/
-
-# Maven
-target/
-!.mvn/wrapper/maven-wrapper.jar
-
-# Eclipse
-.settings/
-.sts4-cache/
-
-
-# OS
+### OS ###
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Spring Boot
+### Java ###
+*.class
 *.jar
 *.war
 *.ear
-!maven/wrapper/maven-wrapper.jar
 !gradle/wrapper/gradle-wrapper.jar
 
-# Logs
+### Logs ###
 logs/
 *.log
 *.log.*
 
-# Environment / Secrets
+### Docker data ###
+docker/postgres-data/
+docker/redis-data/
+
+### Environment / Secrets ###
+.env
 .env.*
 application-local.yml
 application-local.properties
 application-secret.yml
 application-secret.properties
-application-example.yml
-application-example.properties
 
-# Compiled class files
-*.class
+### Spring Boot ###
+docker-compose.override.yml
 
-# Package files
-*.zip
-*.tar.gz
-*.rar
-
-# NetBeans
-nbproject/private/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-
-# Kotlin
-*.kotlin_module
-
-# Test output
+### Test output ###
 test-results/
 surefire-reports/
 
-# Docker override files
-docker-compose.override.yml
-
+### Custom ###
+PRD.md
 .claude/CLAUDE.md
-docker/*
-docker/redis-data
-docker/postgresql-data
-
-
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coveragea
-
-# next.js
-blog-nextjs/.next
-blog-nextjs/out
-blog-nextjs/node_modules
-
-# production
-/build
-
-# misc
-*.pem
-
-# IDE
-.idea/
-
-# Windows
-ehthumbs.db
-Desktop.ini
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
 .claude/settings.local.json
-postgres-data
-redis-data
 test-client

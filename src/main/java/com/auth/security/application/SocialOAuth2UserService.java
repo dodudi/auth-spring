@@ -2,6 +2,7 @@ package com.auth.security.application;
 
 import com.auth.user.domain.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SocialOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
@@ -78,10 +80,20 @@ public class SocialOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private User findOrCreateUser(String email, String nickname, SocialProvider provider, String providerId) {
         return socialAccountRepository.findByProviderAndProviderId(provider, providerId)
-                .map(SocialAccount::getUser)
+                .map(account -> {
+                    log.info("[SOCIAL_LOGIN] email={} provider={}", email, provider);
+                    return account.getUser();
+                })
                 .orElseGet(() -> {
                     User user = userRepository.findByEmail(email)
-                            .orElseGet(() -> createUser(email, nickname));
+                            .map(existing -> {
+                                log.info("[SOCIAL_LOGIN_LINK] email={} provider={}", email, provider);
+                                return existing;
+                            })
+                            .orElseGet(() -> {
+                                log.info("[SOCIAL_LOGIN_NEW] email={} provider={}", email, provider);
+                                return createUser(email, nickname);
+                            });
                     linkSocialAccount(user, provider, providerId);
                     return user;
                 });

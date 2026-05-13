@@ -10,10 +10,12 @@ import com.auth.user.dto.SignUpRequest;
 import com.auth.user.dto.UpdateNicknameRequest;
 import com.auth.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -39,6 +41,7 @@ public class UserService {
         user.addRole(userRole);
 
         User saved = userRepository.save(user);
+        log.info("[USER_SIGNUP] email={}", saved.getEmail());
         return UserResponse.from(saved);
     }
 
@@ -60,5 +63,6 @@ public class UserService {
         User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         user.withdraw();
+        log.info("[USER_WITHDRAW] userId={}", user.getId());
     }
 }
