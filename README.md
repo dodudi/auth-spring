@@ -3,10 +3,10 @@
 Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며, Authorization Code 흐름을 제공합니다.
 
 ## 목차
-1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)
-2. [Spring Session + Redis 구현으로 인증 서버 세션 공유](#spring-session--redis-구현으로-인증-서버-세션-공유)
-3. [JWT + RSA 비대칭키](#JWT--RSA-비대칭키)
-4. [Admin 관리 페이지를 통한 Client 관리](#admin-관리-페이지를-통한-client-관리)
+1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)  
+2. [Spring Session + Redis 구현으로 인증 서버 세션 공유](#spring-session--redis-구현으로-인증-서버-세션-공유)  
+3. [JWT + RSA 비대칭키](#JWT--RSA-비대칭키)  
+4. [Admin 관리 페이지를 통한 Client 관리](#admin-관리-페이지를-통한-client-관리)  
 ---
 
 ## 분리된 Security Filter Chain
@@ -48,6 +48,7 @@ public class AuthorizationServerConfig {
     // ... 생략
 }
 ```
+<img width="667" height="277" alt="image" src="https://github.com/user-attachments/assets/fd479a8e-37ec-4877-ad3a-ff55593c2e87" />
 
 ### Admin 필터 체인 설정
 ```java
@@ -81,6 +82,7 @@ public class AdminSecurityConfig {
 
 }
 ```
+<img width="652" height="290" alt="image" src="https://github.com/user-attachments/assets/117fce93-503a-49a1-96b3-ba7a0f0e67ef" />
 
 ### Resource Server 필터 체인
 ```java
@@ -110,6 +112,7 @@ public class ResourceServerConfig {
     // ... 생략
 }
 ```
+<img width="951" height="298" alt="image" src="https://github.com/user-attachments/assets/22db7561-58ef-4d9a-b0fe-1e64338625f3" />
 
 ### 나머지 처리 필터 체인
 ```java
@@ -160,6 +163,7 @@ public class SecurityConfig {
     // ... 생략
 }
 ```
+<img width="794" height="318" alt="image" src="https://github.com/user-attachments/assets/085e3c2e-5af6-4024-9260-2310e328f248" />
 
 ## Spring Session + Redis 구현으로 인증 서버 세션 공유
 문제: 하나의 인스턴스로 실행 중인 인증 서버에 장애가 발생할 경우 인증 서버를 사용하는 모든 서비스에 문제가 발생합니다.  
