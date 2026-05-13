@@ -4,7 +4,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 
 ## 목차
 1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)
-
+2. [](#spring-session--redis-구현으로-인증-서버-세션-공유)
 ---
 
 ## 분리된 Security Filter Chain
@@ -160,6 +160,45 @@ public class SecurityConfig {
 }
 ```
 
+## Spring Session + Redis 구현으로 인증 서버 세션 공유
+문제: 하나의 인스턴스로 실행 중인 인증 서버에 장애가 발생할 경우 인증 서버를 사용하는 모든 서비스에 문제가 발생합니다.  
+해결: 다중 인스턴스 간 세션 상태를 공유하여 동일한 세션 상태를 유지할 수 있도록 구현했습니다.
+```java
+@Configuration
+@EnableRedisHttpSession(redisNamespace = "spring:session:auth", maxInactiveIntervalInSeconds = 3600)
+public class SessionConfig implements BeanClassLoaderAware {
+
+    private ClassLoader loader;
+
+    @Bean
+    public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
+        return new JacksonJsonRedisSerializer<>(createJsonMapper(), Object.class);
+    }
+
+    private static JsonMapper createJsonMapper() {
+        BasicPolymorphicTypeValidator.Builder builder = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .allowIfSubType("java.util.concurrent.")
+                .allowIfSubType("java.util.")
+                .allowIfSubType("org.springframework.security.")
+                .allowIfSubType("org.springframework.session.");
+
+        OAuth2AuthorizationServerJacksonModule authorizationServerJacksonModule = new OAuth2AuthorizationServerJacksonModule();
+        authorizationServerJacksonModule.configurePolymorphicTypeValidator(builder);
+        List<JacksonModule> securityJacksonModules = SecurityJacksonModules.getModules(JdbcOAuth2AuthorizationService.class.getClassLoader(), builder);
+        return JsonMapper.builder()
+                .addModules(authorizationServerJacksonModule)
+                .addModules(securityJacksonModules)
+                .build();
+    }
+
+    @Override
+    public void setBeanClassLoader(@NonNull ClassLoader classLoader) {
+        this.loader = classLoader;
+    }
+}
+
+```
 ## 목차
 
 1. [시스템 아키텍처](#시스템-아키텍처)
