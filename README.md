@@ -5,6 +5,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 ## 목차
 1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)
 2. [Spring Session + Redis 구현으로 인증 서버 세션 공유](#spring-session--redis-구현으로-인증-서버-세션-공유)
+3. [JWT + RSA 비대칭키](#JWT--RSA-비대칭키)
 ---
 
 ## 분리된 Security Filter Chain
@@ -17,8 +18,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 @RequiredArgsConstructor
 public class AuthorizationServerConfig {
 
-    private final RsaProperty rsaProperty;
-    private final CustomAuthorizationServerFailureHandler customAuthorizationServerFailureHandler;
+    // .. 생략
 
     @Bean
     @Order(1)
@@ -197,7 +197,31 @@ public class SessionConfig implements BeanClassLoaderAware {
         this.loader = classLoader;
     }
 }
+```
 
+## JWT + RSA 비대칭키
+문제: 인증 서버를 사용하기 위한 외부 서비스가 JWT 토큰 검증을 위한 비밀키를 설정해야 합니다. 이는 보안상 위험하다고 판단했습니다.
+해결: RSA 비대칭키 방식을 사용하여 개인키를 인증 서버에 설정하고, 공개키는 개인키로 서명된 값을 검증하고, `/oauth2/jwks` 요청으로 공개키 확인을 하도록 구현했습니다.
+```java
+@Configuration
+@RequiredArgsConstructor
+public class AuthorizationServerConfig {
+
+    private final RsaProperty rsaProperty;
+
+    // .. 생략
+
+    @Bean
+    public JWKSource<SecurityContext> jwkSource() {
+        RSAKey rsaKey = new RSAKey.Builder(rsaProperty.getPublicKey())
+                .privateKey(rsaProperty.getPrivateKey())
+                .keyID("auth-server-key")
+                .build();
+        return new ImmutableJWKSet<>(new JWKSet(rsaKey));
+    }
+
+    // .. 생략
+}
 ```
 ## 목차
 
