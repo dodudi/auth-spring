@@ -6,7 +6,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 1. [분리된 Security Filter Chain로 이동](#분리된-security-filter-chain)
 2. [Spring Session + Redis 구현으로 인증 서버 세션 공유](#spring-session--redis-구현으로-인증-서버-세션-공유)
 3. [JWT + RSA 비대칭키](#JWT--RSA-비대칭키)
-4. [Admin 관리 페이지를 통한 Client 관리](#admin-관리-페이지를-위한-client-관리)
+4. [Admin 관리 페이지를 통한 Client 관리](#admin-관리-페이지를-통한-client-관리)
 ---
 
 ## 분리된 Security Filter Chain
