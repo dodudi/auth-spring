@@ -65,6 +65,7 @@ application-local.yml
 application-local.properties
 application-secret.yml
 application-secret.properties
+*.pem
 
 ### Spring Boot ###
 docker-compose.override.yml
@@ -75,6 +76,12 @@ surefire-reports/
 
 ### Custom ###
 PRD.md
+BACKUP.md
+LOGGING_PLAN.md
+MONITORING.md
+README2.md
+TEST.md
+presentation.html
 .claude/CLAUDE.md
 .claude/settings.local.json
 test-client
