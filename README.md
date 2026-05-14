@@ -7,6 +7,8 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 2. [Spring Session + Redis 구현으로 인증 서버 세션 공유](#spring-session--redis-구현으로-인증-서버-세션-공유)  
 3. [JWT + RSA 비대칭키](#JWT--RSA-비대칭키)  
 4. [Admin 관리 페이지를 통한 Client 관리](#admin-관리-페이지를-통한-client-관리)  
+5. [Prometheus + Grafana를 활용한 서비스 메트릭 모니터링](#prometheus--grafana를-활용한-서비스-메트릭-모니터링)  
+6. [Loki + Promtail을 활용한 로그 수집 및 모니터링](#loki--promtail을-활용한-로그-수집-및-모니터링)  
 ---
 
 ## 분리된 Security Filter Chain
@@ -273,4 +275,99 @@ public class AdminSecurityConfig {
     }
 
 }
+```
+
+## Prometheus + Grafana를 활용한 서비스 메트릭 모니터링
+문제: 서비스 운영 중 발생하는 성능 이상이나 장애를 사전에 감지하기 어렵다는 문제가 있습니다.  
+해결: Spring Actuator와 Micrometer를 연동해 핵심 메트릭을 Prometheus로 수집하고, Grafana 대시보드에서 실시간으로 시각화합니다.
+
+### 의존성 설정
+`micrometer-registry-prometheus`를 추가하면 `/actuator/prometheus` 엔드포인트가 활성화되어 Prometheus가 메트릭을 수집할 수 있습니다.
+
+```gradle
+// Observability
+implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+// Runtime
+runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+```
+
+### Actuator 엔드포인트 노출 설정
+`/actuator/prometheus` 엔드포인트만 외부에 노출하도록 설정합니다.
+
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+```
+
+### Prometheus 수집 설정
+Prometheus가 15초마다 `/actuator/prometheus`를 호출해 메트릭을 수집합니다.
+
+```yaml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: auth-spring
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:30000
+```
+
+## Loki + Promtail을 활용한 로그 수집 및 모니터링
+문제: 서버에 직접 접속하여 로그를 확인해야 하고, 어떤 지점에서 문제가 발생했는지 로그를 모두 찾아봐야 합니다.  
+해결: Logback JSON Encoder로 구조화된 로그를 파일에 출력하고, Promtail(로그 수집 에이전트)이 이를 읽어 Loki(로그 저장소)로 전송합니다. Grafana에서 메트릭과 로그를 통합 조회할 수 있습니다.
+
+### Logback 구조화 로그 설정
+`prod` 프로파일에서는 `JsonEncoder`를 사용해 JSON 형태로 로그를 파일에 기록합니다. `RollingFileAppender`로 날짜별·크기별 로그 파일을 분리하고, 최대 30일치 3GB까지 보관합니다.
+
+```xml
+<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/auth-spring.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        <fileNamePattern>logs/auth-spring.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+        <maxFileSize>100MB</maxFileSize>
+        <maxHistory>30</maxHistory>
+        <totalSizeCap>3GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder class="ch.qos.logback.classic.encoder.JsonEncoder"/>
+</appender>
+
+<springProfile name="prod">
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</springProfile>
+```
+
+### Promtail 수집 설정
+Promtail이 로그 파일을 읽어 `level` 필드를 라벨로 추출한 뒤 Loki로 전송합니다. JSON 구조화 로그 덕분에 Grafana에서 `level`, `app` 등의 라벨로 필터링이 가능합니다.
+
+```yaml
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: auth-spring
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          app: auth-spring
+          env: prod
+          __path__: /logs/auth-spring.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+      - labels:
+          level:
 ```
