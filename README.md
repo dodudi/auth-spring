@@ -9,6 +9,7 @@ Spring Boot 기반 OAuth2 인증 서버. Google 소셜 로그인을 지원하며
 4. [Admin 관리 페이지를 통한 Client 관리](#admin-관리-페이지를-통한-client-관리)  
 5. [Prometheus + Grafana를 활용한 서비스 메트릭 모니터링](#prometheus--grafana를-활용한-서비스-메트릭-모니터링)  
 6. [Loki + Promtail을 활용한 로그 수집 및 모니터링](#loki--promtail을-활용한-로그-수집-및-모니터링)  
+7. [Grafana 대시보드 구성](#grafana-대시보드-구성)  
 ---
 
 ## 분리된 Security Filter Chain
@@ -371,3 +372,62 @@ scrape_configs:
       - labels:
           level:
 ```
+
+## Grafana 대시보드 구성
+Prometheus(메트릭)와 Loki(로그)를 단일 대시보드에 통합해 수치 이상 감지 → 원인 로그 확인까지 화면 전환 없이 처리할 수 있도록 설계했습니다.  
+대시보드는 4개 섹션으로 구성되며, 상위 섹션에서 이상 징후를 발견하면 하위 섹션으로 드릴다운하는 흐름을 따릅니다.
+
+```
+Overview (현재 상태 5초 파악)
+  └── 이상 감지 → Security / API Performance 섹션으로 드릴다운
+        └── 원인 규명 → System Health 섹션으로 인프라 확인
+              └── 원문 확인 → 로그 뷰어 패널
+```
+
+### 1. Overview
+대시보드 상단의 4개 `stat` 패널로, 현재 서버 상태를 한눈에 파악합니다.
+
+| 패널 | 데이터 소스 | 내용 | 임계값 |
+|---|---|---|---|
+| 총 요청 수 (RPS) | Prometheus | `rate(http_server_requests_seconds_count[1m])` | - |
+| 에러율 (5xx) | Prometheus | 5xx 비율 / 전체 요청 * 100 | 1% 노란색 / 5% 빨간색 |
+| P95 응답시간 | Prometheus | `histogram_quantile(0.95, ...)` ms 환산 | 500ms 노란색 / 1000ms 빨간색 |
+| 로그인 실패 | Loki | `[LOGIN_FAILURE]` 로그 카운트 | 10건 노란색 / 50건 빨간색 |
+
+평균(P50) 대신 P95를 사용하는 이유는 평균은 느린 요청이 희석되기 때문입니다. 상위 5%가 겪는 최악의 응답시간을 측정해야 실제 서비스 품질을 반영할 수 있습니다.
+
+### 2. Security
+인증 서버의 핵심 이벤트를 별도 섹션으로 분리해 보안 이상 징후를 추적합니다.
+
+| 패널 | 타입 | 내용 |
+|---|---|---|
+| 로그인 성공 vs 실패 | 시계열 | `[LOGIN_SUCCESS]` / `[LOGIN_FAILURE]` 로그를 1분 단위로 비교 |
+| 소셜 로그인 유형 | 도넛 파이 차트 | Returning(재로그인) / Link(계정 연동) / New(신규 가입) 비율 |
+| 신규 가입 추이 | 시계열 | 폼 가입(`[USER_SIGNUP]`) vs 소셜 가입(`[SOCIAL_LOGIN_NEW]`) |
+| 최근 로그인 실패 | 로그 뷰어 | `[LOGIN_FAILURE]` 원문 로그 (내림차순), 브루트포스 감지용 |
+
+소셜 로그인을 3가지로 분류하는 것은 `SocialOAuth2UserService`가 내부적으로 재로그인·계정 연동·신규 가입을 구분해 처리하기 때문입니다. 각 비율로 소셜 전환율과 계정 연동 빈도를 측정할 수 있습니다.
+
+### 3. API Performance
+엔드포인트별 성능을 분석해 병목 지점을 식별합니다.
+
+| 패널 | 타입 | 내용 |
+|---|---|---|
+| 엔드포인트별 RPS | 시계열 | URI별 초당 요청 수 |
+| 평균 응답시간 (by URI) | 시계열 | `sum / count * 1000` ms 환산, URI별 분리 |
+| HTTP 상태 코드 분포 | 바 차트 | 200 / 400 / 401 / 403 / 500 등 누적 카운트 |
+| WARN / ERROR 로그 추이 | 시계열 | Loki `level` 라벨 기반 집계 |
+
+RPS와 응답시간을 나란히 배치한 것은 트래픽 증가와 응답시간 상승의 상관관계를 확인하기 위해서입니다. RPS는 유지되는데 응답시간만 올라가면 DB·외부 의존성 문제, 반대면 트래픽 급증 문제로 원인을 빠르게 구분할 수 있습니다.
+
+### 4. System Health
+JVM과 인프라 리소스를 모니터링해 장애의 근본 원인을 파악합니다.
+
+| 패널 | 내용 |
+|---|---|
+| JVM 힙 메모리 | Used vs Max 비교 — Used가 Max에 근접하면 OOM 위험 |
+| DB 커넥션 풀 | Active / Pending / Max 3선 — Pending 발생 시 DB 병목을 의미 |
+| CPU 사용률 | JVM 프로세스 CPU (`process_cpu_usage`, 0~1 범위) |
+| GC 멈춤 시간 | action(minor/major) + cause별 분리 — 응답시간 스파이크의 원인 파악 |
+
+DB 커넥션 풀을 3개 라인으로 분리하는 이유는 Active만으로는 부족하기 때문입니다. Pending이 발생하는 순간이 실제 병목 시점이고, Max와의 차이로 여유 용량을 확인할 수 있습니다. 이 프로젝트는 HikariCP `maximum-pool-size=10`으로 고정되어 있어 특히 중요합니다.
