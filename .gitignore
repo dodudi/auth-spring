@@ -82,6 +82,6 @@ MONITORING.md
 README2.md
 TEST.md
 presentation.html
-.claude/CLAUDE.md
-.claude/settings.local.json
+CLAUDE.md
+.claude/
 test-client
