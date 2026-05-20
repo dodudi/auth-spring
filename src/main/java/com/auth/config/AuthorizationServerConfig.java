@@ -2,6 +2,7 @@ package com.auth.config;
 
 import com.auth.security.handler.ClientAwareLoginUrlAuthenticationEntryPoint;
 import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
+import com.auth.security.property.AuthProperty;
 import com.auth.security.property.RsaProperty;
 import com.auth.user.domain.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 public class AuthorizationServerConfig {
 
     private final RsaProperty rsaProperty;
+    private final AuthProperty authProperty;
     private final CustomAuthorizationServerFailureHandler customAuthorizationServerFailureHandler;
     private final CorsConfigurationSource corsConfigurationSource;
 
@@ -88,7 +90,9 @@ public class AuthorizationServerConfig {
 
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
+        return AuthorizationServerSettings.builder()
+                .issuer(authProperty.getIssuerUri())
+                .build();
     }
 
     // Access Token에 사용자 role과 UUID를 포함시킨다
