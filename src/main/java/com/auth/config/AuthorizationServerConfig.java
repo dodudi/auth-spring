@@ -29,6 +29,7 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ public class AuthorizationServerConfig {
 
     private final RsaProperty rsaProperty;
     private final CustomAuthorizationServerFailureHandler customAuthorizationServerFailureHandler;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     @Order(1)
@@ -46,6 +48,7 @@ public class AuthorizationServerConfig {
             HttpSecurity http,
             RegisteredClientRepository registeredClientRepository) {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .oauth2AuthorizationServer(authorizationServer -> {
                     http.securityMatcher(authorizationServer.getEndpointsMatcher());
                     authorizationServer.oidc(Customizer.withDefaults());
