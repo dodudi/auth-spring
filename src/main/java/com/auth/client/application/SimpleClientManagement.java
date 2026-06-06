@@ -1,11 +1,11 @@
-package com.auth.admin.application;
+package com.auth.client.application;
 
-import com.auth.admin.domain.ClientRepository;
-import com.auth.admin.dto.ClientCreateRequest;
-import com.auth.admin.dto.ClientDetail;
-import com.auth.admin.dto.ClientSummary;
-import com.auth.admin.dto.ClientUpdateRequest;
-import com.auth.admin.dto.SecretRevealResponse;
+import com.auth.client.domain.ClientRepository;
+import com.auth.client.dto.ClientCreateRequest;
+import com.auth.client.dto.ClientDetail;
+import com.auth.client.dto.ClientSummary;
+import com.auth.client.dto.ClientUpdateRequest;
+import com.auth.client.dto.SecretRevealResponse;
 import com.auth.common.exception.AuthException;
 import com.auth.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SimpleAdminClientService implements AdminClientManagement {
+public class SimpleClientManagement implements ClientManagement {
 
     private final RegisteredClientRepository registeredClientRepository;
     private final ClientRepository clientRepository;

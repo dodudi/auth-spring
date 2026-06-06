@@ -1,4 +1,4 @@
-package com.auth.admin.dto;
+package com.auth.client.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

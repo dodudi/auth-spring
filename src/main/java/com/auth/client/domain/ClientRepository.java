@@ -1,6 +1,6 @@
-package com.auth.admin.domain;
+package com.auth.client.domain;
 
-import com.auth.admin.dto.ClientSummary;
+import com.auth.client.dto.ClientSummary;
 
 import java.util.List;
 

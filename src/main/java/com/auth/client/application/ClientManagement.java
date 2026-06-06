@@ -1,14 +1,14 @@
-package com.auth.admin.application;
+package com.auth.client.application;
 
-import com.auth.admin.dto.ClientCreateRequest;
-import com.auth.admin.dto.ClientDetail;
-import com.auth.admin.dto.ClientSummary;
-import com.auth.admin.dto.ClientUpdateRequest;
-import com.auth.admin.dto.SecretRevealResponse;
+import com.auth.client.dto.ClientCreateRequest;
+import com.auth.client.dto.ClientDetail;
+import com.auth.client.dto.ClientSummary;
+import com.auth.client.dto.ClientUpdateRequest;
+import com.auth.client.dto.SecretRevealResponse;
 
 import java.util.List;
 
-public interface AdminClientManagement {
+public interface ClientManagement {
 
     List<ClientSummary> findAll();
 

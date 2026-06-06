@@ -1,9 +1,9 @@
 package com.auth.admin.api;
 
-import com.auth.admin.application.AdminClientManagement;
-import com.auth.admin.dto.ClientCreateRequest;
-import com.auth.admin.dto.ClientUpdateRequest;
-import com.auth.admin.dto.SecretRevealResponse;
+import com.auth.client.application.ClientManagement;
+import com.auth.client.dto.ClientCreateRequest;
+import com.auth.client.dto.ClientUpdateRequest;
+import com.auth.client.dto.SecretRevealResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -19,11 +19,11 @@ import java.util.HashSet;
 @RequestMapping("/admin/clients")
 public class AdminClientController {
 
-    private final AdminClientManagement adminClientManagement;
+    private final ClientManagement clientManagement;
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("clients", adminClientManagement.findAll());
+        model.addAttribute("clients", clientManagement.findAll());
         return "admin/clients/list";
     }
 
@@ -42,7 +42,7 @@ public class AdminClientController {
         if (bindingResult.hasErrors()) {
             return "admin/clients/new";
         }
-        SecretRevealResponse reveal = adminClientManagement.create(form);
+        SecretRevealResponse reveal = clientManagement.create(form);
         redirectAttributes.addFlashAttribute("reveal", reveal);
         return "redirect:/admin/clients/" + reveal.id() + "/secret-reveal";
     }
@@ -57,7 +57,7 @@ public class AdminClientController {
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable String id, Model model) {
-        var detail = adminClientManagement.getDetail(id);
+        var detail = clientManagement.getDetail(id);
         model.addAttribute("detail", detail);
 
         ClientUpdateRequest form = new ClientUpdateRequest();
@@ -83,10 +83,10 @@ public class AdminClientController {
             Model model
     ) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("detail", adminClientManagement.getDetail(id));
+            model.addAttribute("detail", clientManagement.getDetail(id));
             return "admin/clients/edit";
         }
-        adminClientManagement.update(id, form);
+        clientManagement.update(id, form);
         return "redirect:/admin/clients";
     }
 
@@ -95,14 +95,14 @@ public class AdminClientController {
             @PathVariable String id,
             RedirectAttributes redirectAttributes
     ) {
-        SecretRevealResponse reveal = adminClientManagement.regenerateSecret(id);
+        SecretRevealResponse reveal = clientManagement.regenerateSecret(id);
         redirectAttributes.addFlashAttribute("reveal", reveal);
         return "redirect:/admin/clients/" + id + "/secret-reveal";
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable String id) {
-        adminClientManagement.delete(id);
+        clientManagement.delete(id);
         return "redirect:/admin/clients";
     }
 }
