@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f4f4f5;
+            color: #18181b;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert {
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1.25rem;
+        }
+        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+        .form-group { margin-bottom: 1.125rem; }
+        label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: #18181b;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus { border-color: #a1a1aa; }
+        input.is-error { border-color: #ef4444; }
+
+        .field-error { color: #ef4444; font-size: 0.8125rem; margin-top: 0.375rem; }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.5625rem 0.75rem;
+            border-radius: 0.375rem;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .btn-primary { background: #18181b; color: #ffffff; }
+        .btn-primary:hover { background: #3f3f46; }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: 0.875rem;
+            color: #71717a;
+        }
+        .footer-link a { color: #18181b; font-weight: 500; text-decoration: none; }
+        .footer-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1 class="card-title">회원가입</h1>
+
+        <div class="alert alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <form th:action="@{/signup}" th:object="${form}" method="post">
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" th:field="*{email}" autocomplete="email" autofocus
+                       th:classappend="${#fields.hasErrors('email')} ? 'is-error'"/>
+                <p class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호 <span style="color:#71717a; font-weight:400;">(8~20자)</span></label>
+                <input type="password" id="password" th:field="*{password}" autocomplete="new-password"
+                       th:classappend="${#fields.hasErrors('password')} ? 'is-error'"/>
+                <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+            </div>
+            <div class="form-group">
+                <label for="nickname">닉네임 <span style="color:#71717a; font-weight:400;">(2~20자)</span></label>
+                <input type="text" id="nickname" th:field="*{nickname}" autocomplete="nickname"
+                       th:classappend="${#fields.hasErrors('nickname')} ? 'is-error'"/>
+                <p class="field-error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}"></p>
+            </div>
+            <button type="submit" class="btn btn-primary">가입하기</button>
+        </form>
+
+        <p class="footer-link">이미 계정이 있으신가요? <a th:href="@{/login}">로그인</a></p>
+    </div>
+</body>
+</html>
