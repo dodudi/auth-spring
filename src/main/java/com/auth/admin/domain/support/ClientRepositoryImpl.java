@@ -1,5 +1,6 @@
-package com.auth.admin.domain;
+package com.auth.admin.domain.support;
 
+import com.auth.admin.domain.ClientRepository;
 import com.auth.admin.dto.ClientSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;

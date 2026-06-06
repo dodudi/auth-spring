@@ -1,4 +1,4 @@
-package com.auth.config;
+package com.auth.security.config;
 
 import com.auth.security.application.SocialOAuth2UserService;
 import com.auth.security.handler.JsonAuthenticationFailureHandler;

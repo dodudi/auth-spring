@@ -1,4 +1,4 @@
-package com.auth.config;
+package com.auth.security.config;
 
 import com.auth.security.handler.ClientAwareLoginUrlAuthenticationEntryPoint;
 import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
