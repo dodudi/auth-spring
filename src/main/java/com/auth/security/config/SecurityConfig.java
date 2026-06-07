@@ -3,7 +3,6 @@ package com.auth.security.config;
 import com.auth.security.application.SocialOAuth2UserService;
 import com.auth.security.handler.JsonAuthenticationFailureHandler;
 import com.auth.security.handler.JsonAuthenticationSuccessHandler;
-import tools.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +13,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 
@@ -38,7 +39,12 @@ public class SecurityConfig {
         JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper);
         JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper);
 
+        HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+        requestCache.setMatchingRequestParameterName(null);
+        requestCache.setRequestMatcher(request -> !request.getServletPath().startsWith("/login"));
+
         http
+                .requestCache(cache -> cache.requestCache(requestCache))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/oauth/error", "/signup").permitAll()

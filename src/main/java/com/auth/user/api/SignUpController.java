@@ -22,18 +22,18 @@ public class SignUpController {
 
     @GetMapping
     public String signUpPage(Model model) {
-        model.addAttribute("form", new SignUpForm());
+        model.addAttribute("form", new SignUpRequest(null, null, null));
         return "signup";
     }
 
     @PostMapping
-    public String signUp(@Valid @ModelAttribute("form") SignUpForm form, BindingResult bindingResult, Model model) {
+    public String signUp(@Valid @ModelAttribute("form") SignUpRequest form, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             return "signup";
         }
 
         try {
-            userService.signUp(new SignUpRequest(form.getEmail(), form.getPassword(), form.getNickname()));
+            userService.signUp(form);
         } catch (AuthException e) {
             model.addAttribute("errorMessage", e.getErrorCode().getMessage());
             return "signup";
