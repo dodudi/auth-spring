@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -35,7 +37,8 @@ public class UserController {
     @GetMapping("/me")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<UserResponse>> getMe(Authentication authentication) {
-        UserResponse response = userService.getMe(authentication.getName());
+        UUID userId = UUID.fromString(authentication.getName());
+        UserResponse response = userService.getMe(userId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
@@ -44,14 +47,16 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> updateNickname(
             Authentication authentication,
             @Valid @RequestBody UpdateNicknameRequest request) {
-        UserResponse response = userService.updateNickname(authentication.getName(), request);
+        UUID userId = UUID.fromString(authentication.getName());
+        UserResponse response = userService.updateNickname(userId, request);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @DeleteMapping("/me")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> deleteMe(Authentication authentication) {
-        userService.withdraw(authentication.getName());
+        UUID userId = UUID.fromString(authentication.getName());
+        userService.withdraw(userId);
         return ResponseEntity.ok(ApiResponse.ok());
     }
 }

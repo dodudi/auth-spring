@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,21 +48,21 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponse getMe(String email) {
-        User user = userRepository.findByEmailWithRoles(email)
+    public UserResponse getMe(UUID userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         return UserResponse.from(user);
     }
 
-    public UserResponse updateNickname(String email, UpdateNicknameRequest request) {
-        User user = userRepository.findByEmailWithRoles(email)
+    public UserResponse updateNickname(UUID userId, UpdateNicknameRequest request) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         user.updateNickname(request.nickname());
         return UserResponse.from(user);
     }
 
-    public void withdraw(String email) {
-        User user = userRepository.findByEmailWithRoles(email)
+    public void withdraw(UUID userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         user.withdraw();
         log.info("[USER_WITHDRAW] userId={}", user.getId());
