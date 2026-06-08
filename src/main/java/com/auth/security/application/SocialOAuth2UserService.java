@@ -59,7 +59,7 @@ public class SocialOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // 제공자별로 principal name 필드가 달라 authentication.getName()이 일관되지 않는 문제를 방지하기 위해
         // 이메일을 "identifier" 키로 통일해 principal name으로 사용한다
         Map<String, Object> customAttributes = new HashMap<>(oauth2User.getAttributes());
-        customAttributes.put("identifier", email);
+        customAttributes.put("identifier", user.getId().toString());
 
         return new DefaultOAuth2User(authorities, customAttributes, "identifier");
     }

@@ -1,4 +1,4 @@
-package com.auth.config;
+package com.auth.security.config;
 
 import com.auth.security.handler.ClientAwareLoginUrlAuthenticationEntryPoint;
 import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
@@ -11,6 +11,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -22,6 +23,10 @@ import org.springframework.security.config.annotation.web.configuration.OAuth2Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
+import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -33,8 +38,10 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class AuthorizationServerConfig {
@@ -75,6 +82,20 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
+    public OAuth2AuthorizationService authorizationService(
+            JdbcTemplate jdbcTemplate,
+            RegisteredClientRepository registeredClientRepository) {
+        return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+    }
+
+    @Bean
+    public OAuth2AuthorizationConsentService authorizationConsentService(
+            JdbcTemplate jdbcTemplate,
+            RegisteredClientRepository registeredClientRepository) {
+        return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository);
+    }
+
+    @Bean
     public JWKSource<SecurityContext> jwkSource() {
         RSAKey rsaKey = new RSAKey.Builder(rsaProperty.getPublicKey())
                 .privateKey(rsaProperty.getPrivateKey())
@@ -95,7 +116,7 @@ public class AuthorizationServerConfig {
                 .build();
     }
 
-    // Access Token에 사용자 role과 UUID를 포함시킨다
+    // Access Token에 사용자 roles, email을 포함시킨다 (sub는 UUID로 자동 설정됨)
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer(UserRepository userRepository) {
         return context -> {
@@ -106,8 +127,14 @@ public class AuthorizationServerConfig {
                         .collect(Collectors.toSet());
                 context.getClaims().claim("roles", roles);
 
-                userRepository.findByEmail(principal.getName())
-                        .ifPresent(user -> context.getClaims().claim("user_id", user.getId().toString()));
+                String principalName = principal.getName();
+                log.debug("[TOKEN_CUSTOMIZER] principalName={} principalType={}", principalName, principal.getClass().getSimpleName());
+                UUID userId = UUID.fromString(principalName);
+                userRepository.findById(userId)
+                        .ifPresentOrElse(
+                                user -> context.getClaims().claim("email", user.getEmail()),
+                                () -> log.warn("[TOKEN_CUSTOMIZER] user not found for userId={}", userId)
+                        );
             }
         };
     }

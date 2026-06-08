@@ -1,4 +1,4 @@
-package com.auth.admin.dto;
+package com.auth.client.dto;
 
 import java.time.Instant;
 

@@ -1,4 +1,4 @@
-package com.auth.config;
+package com.auth.security.config;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.BeanClassLoaderAware;

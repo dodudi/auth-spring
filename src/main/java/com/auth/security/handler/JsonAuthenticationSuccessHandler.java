@@ -30,7 +30,7 @@ public class JsonAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
             @NonNull HttpServletResponse response,
             @NonNull Authentication authentication
     ) throws IOException {
-        log.info("[LOGIN_SUCCESS] email={} ip={}", authentication.getName(), HttpUtils.getClientIp(request));
+        log.info("[LOGIN_SUCCESS] userId={} ip={}", authentication.getName(), HttpUtils.getClientIp(request));
 
         SavedRequest savedRequest = requestCache.getRequest(request, response);
 
