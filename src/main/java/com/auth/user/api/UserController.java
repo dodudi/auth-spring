@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserResponse>> getMe(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         UserResponse response = userService.getMe(userId);
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserResponse>> updateNickname(
             Authentication authentication,
             @Valid @RequestBody UpdateNicknameRequest request) {
@@ -53,7 +53,7 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> deleteMe(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         userService.withdraw(userId);

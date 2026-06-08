@@ -35,7 +35,6 @@ public class LocalDataInitializer implements ApplicationRunner {
     private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
     private static final String TEST_CLIENT_ID = "local-test-client";
-    private static final String TEST_CLIENT_SECRET = "local-secret";
     private static final String TEST_CLIENT_NAME = "로컬 테스트 클라이언트";
     private static final String TEST_REDIRECT_URI = "http://localhost:3000/callback";
     private static final String TEST_POST_LOGOUT_URI = "http://localhost:3000";
@@ -74,16 +73,16 @@ public class LocalDataInitializer implements ApplicationRunner {
     }
 
     private void initTestClient() {
-        if (clientRepository.existsByClientId(TEST_CLIENT_ID)) {
-            log.debug("[LOCAL_INIT] 테스트 클라이언트 이미 존재함. clientId={}", TEST_CLIENT_ID);
-            return;
+        RegisteredClient existing = registeredClientRepository.findByClientId(TEST_CLIENT_ID);
+        if (existing != null) {
+            clientRepository.deleteById(existing.getId());
+            log.debug("[LOCAL_INIT] 기존 테스트 클라이언트 삭제 후 재등록. clientId={}", TEST_CLIENT_ID);
         }
 
         RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId(TEST_CLIENT_ID)
-                .clientSecret(passwordEncoder.encode(TEST_CLIENT_SECRET))
                 .clientName(TEST_CLIENT_NAME)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .scope("openid")
@@ -91,7 +90,7 @@ public class LocalDataInitializer implements ApplicationRunner {
                 .redirectUri(TEST_REDIRECT_URI)
                 .postLogoutRedirectUri(TEST_POST_LOGOUT_URI)
                 .clientSettings(ClientSettings.builder()
-                        .requireProofKey(false)
+                        .requireProofKey(true)
                         .requireAuthorizationConsent(true)
                         .setting("loginPageUri", "/login")
                         .build())
@@ -103,6 +102,6 @@ public class LocalDataInitializer implements ApplicationRunner {
 
         registeredClientRepository.save(client);
 
-        log.info("[LOCAL_INIT] 테스트 클라이언트 등록 완료. clientId={}, clientSecret={}", TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+        log.info("[LOCAL_INIT] 테스트 클라이언트 등록 완료 (Public Client). clientId={}", TEST_CLIENT_ID);
     }
 }
