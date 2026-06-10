@@ -39,6 +39,10 @@ public class LocalDataInitializer implements ApplicationRunner {
     private static final String TEST_REDIRECT_URI = "http://localhost:3000/callback";
     private static final String TEST_POST_LOGOUT_URI = "http://localhost:3000";
 
+    private static final String M2M_CLIENT_ID = "local-m2m-client";
+    private static final String M2M_CLIENT_NAME = "로컬 M2M 클라이언트";
+    private static final String M2M_CLIENT_SECRET = "local-m2m-secret";
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RegisteredClientRepository registeredClientRepository;
@@ -50,6 +54,7 @@ public class LocalDataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         initAdminUser();
         initTestClient();
+        initM2mClient();
     }
 
     private void initAdminUser() {
@@ -103,5 +108,29 @@ public class LocalDataInitializer implements ApplicationRunner {
         registeredClientRepository.save(client);
 
         log.info("[LOCAL_INIT] 테스트 클라이언트 등록 완료 (Public Client). clientId={}", TEST_CLIENT_ID);
+    }
+
+    private void initM2mClient() {
+        RegisteredClient existing = registeredClientRepository.findByClientId(M2M_CLIENT_ID);
+        if (existing != null) {
+            clientRepository.deleteById(existing.getId());
+            log.debug("[LOCAL_INIT] 기존 M2M 클라이언트 삭제 후 재등록. clientId={}", M2M_CLIENT_ID);
+        }
+
+        RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId(M2M_CLIENT_ID)
+                .clientName(M2M_CLIENT_NAME)
+                .clientSecret(passwordEncoder.encode(M2M_CLIENT_SECRET))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("client:manage")
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofMinutes(30))
+                        .build())
+                .build();
+
+        registeredClientRepository.save(client);
+
+        log.info("[LOCAL_INIT] M2M 클라이언트 등록 완료. clientId={}, secret={}", M2M_CLIENT_ID, M2M_CLIENT_SECRET);
     }
 }

@@ -27,6 +27,7 @@ import org.springframework.security.oauth2.server.authorization.JdbcOAuth2Author
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -117,25 +118,31 @@ public class AuthorizationServerConfig {
     }
 
     // Access Token에 사용자 roles, email을 포함시킨다 (sub는 UUID로 자동 설정됨)
+    // client_credentials 토큰은 사용자 정보가 없으므로 건너뛴다
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer(UserRepository userRepository) {
         return context -> {
-            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-                Authentication principal = context.getPrincipal();
-                Set<String> roles = principal.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toSet());
-                context.getClaims().claim("roles", roles);
-
-                String principalName = principal.getName();
-                log.debug("[TOKEN_CUSTOMIZER] principalName={} principalType={}", principalName, principal.getClass().getSimpleName());
-                UUID userId = UUID.fromString(principalName);
-                userRepository.findById(userId)
-                        .ifPresentOrElse(
-                                user -> context.getClaims().claim("email", user.getEmail()),
-                                () -> log.warn("[TOKEN_CUSTOMIZER] user not found for userId={}", userId)
-                        );
+            if (!OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
+                return;
             }
+            if (AuthorizationGrantType.CLIENT_CREDENTIALS.equals(context.getAuthorizationGrantType())) {
+                return;
+            }
+
+            Authentication principal = context.getPrincipal();
+            Set<String> roles = principal.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
+            context.getClaims().claim("roles", roles);
+
+            String principalName = principal.getName();
+            log.debug("[TOKEN_CUSTOMIZER] principalName={} principalType={}", principalName, principal.getClass().getSimpleName());
+            UUID userId = UUID.fromString(principalName);
+            userRepository.findById(userId)
+                    .ifPresentOrElse(
+                            user -> context.getClaims().claim("email", user.getEmail()),
+                            () -> log.warn("[TOKEN_CUSTOMIZER] user not found for userId={}", userId)
+                    );
         };
     }
 }

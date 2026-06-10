@@ -34,7 +34,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(4)
+    @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper) throws Exception {
         JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper);
         JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper);
