@@ -43,6 +43,12 @@ public class LocalDataInitializer implements ApplicationRunner {
     private static final String M2M_CLIENT_NAME = "로컬 M2M 클라이언트";
     private static final String M2M_CLIENT_SECRET = "local-m2m-secret";
 
+    private static final String ADMIN_CLIENT_ID = "local-admin-server";
+    private static final String ADMIN_CLIENT_NAME = "로컬 어드민 서버";
+    private static final String ADMIN_CLIENT_SECRET = "admin-secret-local";
+    private static final String ADMIN_REDIRECT_URI = "http://localhost:8090/login/oauth2/code/auth-server";
+    private static final String ADMIN_POST_LOGOUT_URI = "http://localhost:8090";
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RegisteredClientRepository registeredClientRepository;
@@ -55,6 +61,7 @@ public class LocalDataInitializer implements ApplicationRunner {
         initAdminUser();
         initTestClient();
         initM2mClient();
+        initAdminClient();
     }
 
     private void initAdminUser() {
@@ -132,5 +139,39 @@ public class LocalDataInitializer implements ApplicationRunner {
         registeredClientRepository.save(client);
 
         log.info("[LOCAL_INIT] M2M 클라이언트 등록 완료. clientId={}, secret={}", M2M_CLIENT_ID, M2M_CLIENT_SECRET);
+    }
+
+    private void initAdminClient() {
+        RegisteredClient existing = registeredClientRepository.findByClientId(ADMIN_CLIENT_ID);
+        if (existing != null) {
+            clientRepository.deleteById(existing.getId());
+            log.debug("[LOCAL_INIT] 기존 어드민 클라이언트 삭제 후 재등록. clientId={}", ADMIN_CLIENT_ID);
+        }
+
+        RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId(ADMIN_CLIENT_ID)
+                .clientName(ADMIN_CLIENT_NAME)
+                .clientSecret(passwordEncoder.encode(ADMIN_CLIENT_SECRET))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .scope("openid")
+                .scope("profile")
+                .redirectUri(ADMIN_REDIRECT_URI)
+                .postLogoutRedirectUri(ADMIN_POST_LOGOUT_URI)
+                .clientSettings(ClientSettings.builder()
+                        .requireProofKey(false)
+                        .requireAuthorizationConsent(false)
+                        .setting("loginPageUri", "/login")
+                        .build())
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofMinutes(30))
+                        .refreshTokenTimeToLive(Duration.ofHours(8))
+                        .build())
+                .build();
+
+        registeredClientRepository.save(client);
+
+        log.info("[LOCAL_INIT] 어드민 클라이언트 등록 완료. clientId={}, secret={}", ADMIN_CLIENT_ID, ADMIN_CLIENT_SECRET);
     }
 }
