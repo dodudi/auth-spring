@@ -3,6 +3,7 @@ package com.auth.security.config;
 import com.auth.security.application.SocialOAuth2UserService;
 import com.auth.security.handler.JsonAuthenticationFailureHandler;
 import com.auth.security.handler.JsonAuthenticationSuccessHandler;
+import com.auth.security.handler.JsonLogoutSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper) throws Exception {
         JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper);
         JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper);
+        JsonLogoutSuccessHandler logoutSuccessHandler = new JsonLogoutSuccessHandler(objectMapper);
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -60,6 +62,12 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(socialOAuth2UserService)
                         )
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("SESSION")
+                        .logoutSuccessHandler(logoutSuccessHandler)
                 );
 
         return http.build();
