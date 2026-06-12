@@ -52,6 +52,12 @@ public class ProdDataInitializer implements ApplicationRunner {
     @Value("${auth.init.admin-client.post-logout-uri}")
     private String adminPostLogoutUri;
 
+    @Value("${auth.init.m2m-client.client-id}")
+    private String m2mClientId;
+
+    @Value("${auth.init.m2m-client.client-secret}")
+    private String m2mClientSecret;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RegisteredClientRepository registeredClientRepository;
@@ -62,6 +68,7 @@ public class ProdDataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         initAdminUser();
         initAdminClient();
+        initM2mClient();
     }
 
     private void initAdminUser() {
@@ -115,5 +122,28 @@ public class ProdDataInitializer implements ApplicationRunner {
         registeredClientRepository.save(client);
 
         log.info("[PROD_INIT] 어드민 클라이언트 등록 완료. clientId={}", adminClientId);
+    }
+
+    private void initM2mClient() {
+        if (registeredClientRepository.findByClientId(m2mClientId) != null) {
+            log.info("[PROD_INIT] M2M 클라이언트 이미 존재함. clientId={}", m2mClientId);
+            return;
+        }
+
+        RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId(m2mClientId)
+                .clientName("M2M 클라이언트")
+                .clientSecret(passwordEncoder.encode(m2mClientSecret))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("client:manage")
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofMinutes(30))
+                        .build())
+                .build();
+
+        registeredClientRepository.save(client);
+
+        log.info("[PROD_INIT] M2M 클라이언트 등록 완료. clientId={}", m2mClientId);
     }
 }
