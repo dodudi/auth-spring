@@ -1,6 +1,8 @@
 package com.auth.security.config;
 
+import com.auth.security.application.LoginAttemptService;
 import com.auth.security.application.SocialOAuth2UserService;
+import com.auth.security.filter.LoginRateLimitFilter;
 import com.auth.security.handler.JsonAuthenticationFailureHandler;
 import com.auth.security.handler.JsonAuthenticationSuccessHandler;
 import com.auth.security.handler.JsonLogoutSuccessHandler;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,12 +38,14 @@ public class SecurityConfig {
 
     @Bean
     @Order(3)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper) throws Exception {
-        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper);
-        JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper);
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper, LoginAttemptService loginAttemptService) throws Exception {
+        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper, loginAttemptService);
+        JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper, loginAttemptService);
+        LoginRateLimitFilter loginRateLimitFilter = new LoginRateLimitFilter(loginAttemptService, objectMapper);
         JsonLogoutSuccessHandler logoutSuccessHandler = new JsonLogoutSuccessHandler(objectMapper);
 
         http
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/oauth/error", "/signup").permitAll()

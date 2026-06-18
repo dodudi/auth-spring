@@ -13,4 +13,12 @@ public final class HttpUtils {
         }
         return request.getRemoteAddr();
     }
+
+    public static String getRealIp(HttpServletRequest request) {
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
+    }
 }

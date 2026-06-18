@@ -13,6 +13,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C002", "서버 내부 오류가 발생했습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "C003", "인증이 필요합니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "C004", "접근 권한이 없습니다."),
+    IP_BLOCKED(HttpStatus.TOO_MANY_REQUESTS, "C005", "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."),

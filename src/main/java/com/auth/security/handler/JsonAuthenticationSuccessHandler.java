@@ -2,6 +2,7 @@ package com.auth.security.handler;
 
 import com.auth.common.response.ApiResponse;
 import com.auth.common.util.HttpUtils;
+import com.auth.security.application.LoginAttemptService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.io.IOException;
 public class JsonAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final ObjectMapper objectMapper;
+    private final LoginAttemptService loginAttemptService;
     private final RequestCache requestCache = new HttpSessionRequestCache();
 
     @Override
@@ -29,7 +31,13 @@ public class JsonAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
             @NonNull HttpServletResponse response,
             @NonNull Authentication authentication
     ) throws IOException {
-        log.info("[LOGIN_SUCCESS] userId={} ip={}", authentication.getName(), HttpUtils.getClientIp(request));
+        String ip = HttpUtils.getRealIp(request);
+        log.info("[LOGIN_SUCCESS] userId={} ip={}", authentication.getName(), ip);
+
+        String email = request.getParameter("username");
+        if (email != null && !email.isBlank()) {
+            loginAttemptService.clearFailures(email, ip);
+        }
 
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {

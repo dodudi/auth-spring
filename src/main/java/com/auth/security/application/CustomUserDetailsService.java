@@ -4,6 +4,7 @@ import com.auth.user.domain.User;
 import com.auth.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,10 +19,15 @@ import java.util.List;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final LoginAttemptService loginAttemptService;
 
     @Override
     @Transactional
     public @NonNull UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
+        if (loginAttemptService.isEmailBlocked(username)) {
+            throw new LockedException("로그인 시도 횟수를 초과했습니다.");
+        }
+
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
