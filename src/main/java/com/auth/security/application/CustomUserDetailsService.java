@@ -1,11 +1,12 @@
 package com.auth.security.application;
 
-import com.auth.user.domain.User;
 import com.auth.user.domain.UserRepository;
+import com.auth.user.domain.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,14 +29,18 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new LockedException("로그인 시도 횟수를 초과했습니다.");
         }
 
-        User user = userRepository.findByEmail(username)
+        var user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .toList();
-        return new org.springframework.security.core.userdetails.User(
+        return new User(
                 user.getId().toString(),
                 user.getPassword(),
+                user.getStatus() != UserStatus.SUSPENDED,   // isEnabled
+                user.getStatus() != UserStatus.WITHDRAWN,   // isAccountNonExpired
+                true,
+                true,
                 authorities
         );
     }

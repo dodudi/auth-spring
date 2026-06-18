@@ -33,6 +33,15 @@ public class LocalDataInitializer implements ApplicationRunner {
     private static final String ADMIN_PASSWORD = "admin1234!";
     private static final String ADMIN_NICKNAME = "로컬관리자";
     private static final String ROLE_ADMIN = "ROLE_ADMIN";
+    private static final String ROLE_USER = "ROLE_USER";
+
+    private static final String SUSPENDED_EMAIL = "suspended@local.dev";
+    private static final String SUSPENDED_PASSWORD = "test1234!";
+    private static final String SUSPENDED_NICKNAME = "정지계정";
+
+    private static final String WITHDRAWN_EMAIL = "withdrawn@local.dev";
+    private static final String WITHDRAWN_PASSWORD = "test1234!";
+    private static final String WITHDRAWN_NICKNAME = "탈퇴계정";
 
     private static final String TEST_CLIENT_ID = "local-test-client";
     private static final String TEST_CLIENT_NAME = "로컬 테스트 클라이언트";
@@ -59,6 +68,8 @@ public class LocalDataInitializer implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         initAdminUser();
+        initSuspendedUser();
+        initWithdrawnUser();
         initTestClient();
         initM2mClient();
         initAdminClient();
@@ -82,6 +93,48 @@ public class LocalDataInitializer implements ApplicationRunner {
         userRepository.save(admin);
 
         log.info("[LOCAL_INIT] 관리자 계정 생성 완료. email={}, password={}", ADMIN_EMAIL, ADMIN_PASSWORD);
+    }
+
+    private void initSuspendedUser() {
+        if (userRepository.existsByEmail(SUSPENDED_EMAIL)) {
+            log.debug("[LOCAL_INIT] 정지 계정 이미 존재함. email={}", SUSPENDED_EMAIL);
+            return;
+        }
+
+        Role userRole = roleRepository.findByName(ROLE_USER)
+                .orElseThrow(() -> new IllegalStateException("ROLE_USER 역할이 없습니다. Flyway 마이그레이션을 확인하세요."));
+
+        User user = User.builder()
+                .email(SUSPENDED_EMAIL)
+                .password(passwordEncoder.encode(SUSPENDED_PASSWORD))
+                .nickname(SUSPENDED_NICKNAME)
+                .build();
+        user.addRole(userRole);
+        user.suspend();
+        userRepository.save(user);
+
+        log.info("[LOCAL_INIT] 정지 계정 생성 완료. email={}, password={}", SUSPENDED_EMAIL, SUSPENDED_PASSWORD);
+    }
+
+    private void initWithdrawnUser() {
+        if (userRepository.existsByEmail(WITHDRAWN_EMAIL)) {
+            log.debug("[LOCAL_INIT] 탈퇴 계정 이미 존재함. email={}", WITHDRAWN_EMAIL);
+            return;
+        }
+
+        Role userRole = roleRepository.findByName(ROLE_USER)
+                .orElseThrow(() -> new IllegalStateException("ROLE_USER 역할이 없습니다. Flyway 마이그레이션을 확인하세요."));
+
+        User user = User.builder()
+                .email(WITHDRAWN_EMAIL)
+                .password(passwordEncoder.encode(WITHDRAWN_PASSWORD))
+                .nickname(WITHDRAWN_NICKNAME)
+                .build();
+        user.addRole(userRole);
+        user.withdraw();
+        userRepository.save(user);
+
+        log.info("[LOCAL_INIT] 탈퇴 계정 생성 완료. email={}, password={}", WITHDRAWN_EMAIL, WITHDRAWN_PASSWORD);
     }
 
     private void initTestClient() {

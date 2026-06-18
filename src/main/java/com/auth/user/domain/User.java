@@ -69,6 +69,10 @@ public class User {
         this.nickname = nickname;
     }
 
+    public void suspend() {
+        this.status = UserStatus.SUSPENDED;
+    }
+
     public void withdraw() {
         this.status = UserStatus.WITHDRAWN;
     }
