@@ -31,7 +31,7 @@ public class JsonAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
             @NonNull HttpServletResponse response,
             @NonNull Authentication authentication
     ) throws IOException {
-        String ip = HttpUtils.getRealIp(request);
+        String ip = HttpUtils.getClientIp(request);
         log.info("[LOGIN_SUCCESS] userId={} ip={}", authentication.getName(), ip);
 
         String email = request.getParameter("username");

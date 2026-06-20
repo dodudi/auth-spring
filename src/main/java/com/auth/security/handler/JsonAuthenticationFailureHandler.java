@@ -31,7 +31,7 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
             @NonNull HttpServletResponse response,
             @NonNull AuthenticationException exception
     ) throws IOException {
-        String ip = HttpUtils.getRealIp(request);
+        String ip = HttpUtils.getClientIp(request);
         log.warn("[LOGIN_FAILURE] ip={} reason={}", ip, exception.getMessage());
 
         if (exception instanceof LockedException) {

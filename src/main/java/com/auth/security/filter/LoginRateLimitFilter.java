@@ -25,7 +25,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         if (isLoginRequest(request)) {
-            String ip = HttpUtils.getRealIp(request);
+            String ip = HttpUtils.getClientIp(request);
             if (loginAttemptService.isIpBlocked(ip)) {
                 response.setContentType("application/json;charset=UTF-8");
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
