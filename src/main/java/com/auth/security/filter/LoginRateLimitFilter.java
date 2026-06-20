@@ -9,12 +9,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
+@Slf4j
 @RequiredArgsConstructor
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
@@ -27,6 +29,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         if (isLoginRequest(request)) {
             String ip = HttpUtils.getClientIp(request);
             if (loginAttemptService.isIpBlocked(ip)) {
+                log.warn("[IP_BLOCKED] ip={}", ip);
                 response.setContentType("application/json;charset=UTF-8");
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.IP_BLOCKED));

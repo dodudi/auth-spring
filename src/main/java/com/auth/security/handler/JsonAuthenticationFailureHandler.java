@@ -32,7 +32,8 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
             @NonNull AuthenticationException exception
     ) throws IOException {
         String ip = HttpUtils.getClientIp(request);
-        log.warn("[LOGIN_FAILURE] ip={} reason={}", ip, exception.getMessage());
+        String email = request.getParameter("username");
+        log.warn("[LOGIN_FAILURE] email={} ip={} reason={}", email != null ? email : "-", ip, exception.getMessage());
 
         if (exception instanceof LockedException) {
             response.setContentType("application/json;charset=UTF-8");
@@ -55,7 +56,6 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
             return;
         }
 
-        String email = request.getParameter("username");
         if (email != null && !email.isBlank()) {
             loginAttemptService.recordFailure(email, ip);
         }
