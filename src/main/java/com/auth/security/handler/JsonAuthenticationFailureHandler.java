@@ -4,9 +4,9 @@ import com.auth.common.exception.ErrorCode;
 import com.auth.common.response.ApiResponse;
 import com.auth.common.util.HttpUtils;
 import com.auth.security.application.LoginAttemptService;
-import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -35,34 +35,30 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
         String email = request.getParameter("username");
         log.warn("[LOGIN_FAILURE] email={} ip={} reason={}", email != null ? email : "-", ip, exception.getMessage());
 
+        ErrorCode errorCode;
         if (exception instanceof LockedException) {
+            errorCode = ErrorCode.ACCOUNT_LOCKED;
+        } else if (exception instanceof DisabledException) {
+            errorCode = ErrorCode.ACCOUNT_SUSPENDED;
+        } else if (exception instanceof AccountExpiredException) {
+            errorCode = ErrorCode.ACCOUNT_WITHDRAWN;
+        } else {
+            if (email != null && !email.isBlank()) {
+                loginAttemptService.recordFailure(email, ip);
+            }
+            errorCode = ErrorCode.INVALID_CREDENTIALS;
+        }
+
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
             response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(ErrorCode.ACCOUNT_LOCKED.getHttpStatus().value());
-            objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.ACCOUNT_LOCKED));
+            response.setStatus(errorCode.getHttpStatus().value());
+            objectMapper.writeValue(response.getWriter(), ApiResponse.fail(errorCode));
             return;
         }
 
-        if (exception instanceof DisabledException) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(ErrorCode.ACCOUNT_SUSPENDED.getHttpStatus().value());
-            objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.ACCOUNT_SUSPENDED));
-            return;
-        }
-
-        if (exception instanceof AccountExpiredException) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(ErrorCode.ACCOUNT_WITHDRAWN.getHttpStatus().value());
-            objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.ACCOUNT_WITHDRAWN));
-            return;
-        }
-
-        if (email != null && !email.isBlank()) {
-            loginAttemptService.recordFailure(email, ip);
-        }
-
-        response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.INVALID_CREDENTIALS));
+        request.getSession().setAttribute("LOGIN_ERROR_CODE", errorCode.getCode());
+        response.sendRedirect("/login?error");
     }
 
 }
