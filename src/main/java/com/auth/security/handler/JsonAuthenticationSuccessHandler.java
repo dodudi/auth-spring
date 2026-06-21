@@ -23,7 +23,7 @@ public class JsonAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
 
     private final ObjectMapper objectMapper;
     private final LoginAttemptService loginAttemptService;
-    private final RequestCache requestCache = new HttpSessionRequestCache();
+    private final RequestCache requestCache;
 
     @Override
     public void onAuthenticationSuccess(

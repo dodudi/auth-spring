@@ -115,8 +115,11 @@
     <div class="card">
         <h1 class="card-title">로그인</h1>
 
-        <div class="alert alert-error" th:if="${param.error}">
-            이메일 또는 비밀번호가 올바르지 않습니다.
+        <div class="alert alert-error" th:if="${loginErrorCode}">
+            <span th:if="${loginErrorCode == 'U007'}">로그인 시도 횟수를 초과했습니다. 10분 후 다시 시도해 주세요.</span>
+            <span th:if="${loginErrorCode == 'U005'}">정지된 계정입니다. 고객센터에 문의해 주세요.</span>
+            <span th:if="${loginErrorCode == 'U006'}">탈퇴한 계정입니다.</span>
+            <span th:if="${loginErrorCode == 'U008'}">이메일 또는 비밀번호가 올바르지 않습니다.</span>
         </div>
         <div class="alert alert-success" th:if="${param.signup}">
             회원가입이 완료됐습니다. 로그인해 주세요.

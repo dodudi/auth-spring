@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -39,12 +40,16 @@ public class SecurityConfig {
     @Bean
     @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper, LoginAttemptService loginAttemptService) throws Exception {
-        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper, loginAttemptService);
+        HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+        requestCache.setRequestMatcher(request -> !request.getServletPath().startsWith("/login"));
+
+        JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper, loginAttemptService, requestCache);
         JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper, loginAttemptService);
         LoginRateLimitFilter loginRateLimitFilter = new LoginRateLimitFilter(loginAttemptService, objectMapper);
         JsonLogoutSuccessHandler logoutSuccessHandler = new JsonLogoutSuccessHandler(objectMapper);
 
         http
+                .requestCache(cache -> cache.requestCache(requestCache))
                 .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
