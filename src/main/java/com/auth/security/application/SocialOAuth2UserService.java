@@ -85,7 +85,7 @@ public class SocialOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     return account.getUser();
                 })
                 .orElseGet(() -> {
-                    User user = userRepository.findByEmail(email)
+                    User user = userRepository.findByEmailWithLock(email)
                             .map(existing -> {
                                 log.info("[SOCIAL_LOGIN_LINK] email={} provider={}", email, provider);
                                 return existing;

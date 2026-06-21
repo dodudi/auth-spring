@@ -19,6 +19,12 @@ public class ClientRepositoryImpl implements ClientRepository {
     private static final String EXISTS_BY_CLIENT_ID_SQL =
             "SELECT COUNT(*) FROM oauth2_registered_client WHERE client_id = ?";
 
+    private static final String DELETE_AUTHORIZATION_BY_CLIENT_ID_SQL =
+            "DELETE FROM oauth2_authorization WHERE registered_client_id = ?";
+
+    private static final String DELETE_CONSENT_BY_CLIENT_ID_SQL =
+            "DELETE FROM oauth2_authorization_consent WHERE registered_client_id = ?";
+
     private static final String DELETE_BY_ID_SQL =
             "DELETE FROM oauth2_registered_client WHERE id = ?";
 
@@ -44,6 +50,8 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public void deleteById(String id) {
+        jdbcTemplate.update(DELETE_AUTHORIZATION_BY_CLIENT_ID_SQL, id);
+        jdbcTemplate.update(DELETE_CONSENT_BY_CLIENT_ID_SQL, id);
         jdbcTemplate.update(DELETE_BY_ID_SQL, id);
     }
 }

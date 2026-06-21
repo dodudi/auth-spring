@@ -1,6 +1,7 @@
 package com.auth.security.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginAttemptService {
@@ -33,8 +35,12 @@ public class LoginAttemptService {
     }
 
     public void clearFailures(String email, String ip) {
-        redisTemplate.delete(EMAIL_KEY_PREFIX + email);
-        redisTemplate.delete(IP_KEY_PREFIX + ip);
+        try {
+            redisTemplate.delete(EMAIL_KEY_PREFIX + email);
+            redisTemplate.delete(IP_KEY_PREFIX + ip);
+        } catch (Exception e) {
+            log.warn("[LOGIN_ATTEMPT] Redis 장애로 실패 횟수 초기화 생략. email={}", email, e);
+        }
     }
 
     public boolean isEmailBlocked(String email) {
@@ -46,11 +52,20 @@ public class LoginAttemptService {
     }
 
     private void increment(String key) {
-        redisTemplate.execute(INCREMENT_WITH_TTL, List.of(key), String.valueOf(BLOCK_DURATION.getSeconds()));
+        try {
+            redisTemplate.execute(INCREMENT_WITH_TTL, List.of(key), String.valueOf(BLOCK_DURATION.getSeconds()));
+        } catch (Exception e) {
+            log.warn("[LOGIN_ATTEMPT] Redis 장애로 실패 횟수 기록 생략. key={}", key, e);
+        }
     }
 
     private boolean isBlocked(String key) {
-        String value = redisTemplate.opsForValue().get(key);
-        return value != null && Integer.parseInt(value) >= MAX_ATTEMPTS;
+        try {
+            String value = redisTemplate.opsForValue().get(key);
+            return value != null && Integer.parseInt(value) >= MAX_ATTEMPTS;
+        } catch (Exception e) {
+            log.warn("[LOGIN_ATTEMPT] Redis 장애로 차단 여부 확인 불가, 통과 처리. key={}", key, e);
+            return false;
+        }
     }
 }
