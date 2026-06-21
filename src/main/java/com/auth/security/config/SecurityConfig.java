@@ -41,7 +41,12 @@ public class SecurityConfig {
     @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, SocialOAuth2UserService socialOAuth2UserService, ObjectMapper objectMapper, LoginAttemptService loginAttemptService) throws Exception {
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
-        requestCache.setRequestMatcher(request -> !request.getServletPath().startsWith("/login"));
+        requestCache.setRequestMatcher(request -> {
+            String path = request.getServletPath();
+            if (path.startsWith("/login")) return false;
+            String accept = request.getHeader("Accept");
+            return accept != null && accept.contains("text/html");
+        });
 
         JsonAuthenticationSuccessHandler successHandler = new JsonAuthenticationSuccessHandler(objectMapper, loginAttemptService, requestCache);
         JsonAuthenticationFailureHandler failureHandler = new JsonAuthenticationFailureHandler(objectMapper, loginAttemptService);
