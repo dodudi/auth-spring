@@ -43,20 +43,23 @@ public class LocalDataInitializer implements ApplicationRunner {
     private static final String WITHDRAWN_PASSWORD = "test1234!";
     private static final String WITHDRAWN_NICKNAME = "탈퇴계정";
 
+    // Public Client — PKCE 필수, 프론트엔드 SPA 테스트용 (clientSecret 없음)
     private static final String TEST_CLIENT_ID = "local-test-client";
     private static final String TEST_CLIENT_NAME = "로컬 테스트 클라이언트";
     private static final String TEST_REDIRECT_URI = "http://localhost:3000/callback";
     private static final String TEST_POST_LOGOUT_URI = "http://localhost:3000";
 
+    // Confidential Client — Client Credentials, 서버 간 M2M 통신 테스트용
     private static final String M2M_CLIENT_ID = "local-m2m-client";
     private static final String M2M_CLIENT_NAME = "로컬 M2M 클라이언트";
     private static final String M2M_CLIENT_SECRET = "local-m2m-secret";
 
-    private static final String ADMIN_CLIENT_ID = "local-admin-server";
-    private static final String ADMIN_CLIENT_NAME = "로컬 어드민 서버";
-    private static final String ADMIN_CLIENT_SECRET = "admin-secret-local";
-    private static final String ADMIN_REDIRECT_URI = "http://localhost:8090/login/oauth2/code/auth-server";
-    private static final String ADMIN_POST_LOGOUT_URI = "http://localhost:8090";
+    // Confidential Client — Authorization Code, Postman으로 로그인 플로우 테스트용
+    private static final String POSTMAN_CLIENT_ID = "local-postman-client";
+    private static final String POSTMAN_CLIENT_NAME = "로컬 Postman 클라이언트";
+    private static final String POSTMAN_CLIENT_SECRET = "postman-secret-local";
+    private static final String POSTMAN_REDIRECT_URI = "https://oauth.pstmn.io/v1/callback";
+
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -72,7 +75,7 @@ public class LocalDataInitializer implements ApplicationRunner {
         initWithdrawnUser();
         initTestClient();
         initM2mClient();
-        initAdminClient();
+        initPostmanClient();
     }
 
     private void initAdminUser() {
@@ -194,37 +197,38 @@ public class LocalDataInitializer implements ApplicationRunner {
         log.info("[LOCAL_INIT] M2M 클라이언트 등록 완료. clientId={}, secret={}", M2M_CLIENT_ID, M2M_CLIENT_SECRET);
     }
 
-    private void initAdminClient() {
-        RegisteredClient existing = registeredClientRepository.findByClientId(ADMIN_CLIENT_ID);
+    private void initPostmanClient() {
+        RegisteredClient existing = registeredClientRepository.findByClientId(POSTMAN_CLIENT_ID);
         if (existing != null) {
             clientRepository.deleteById(existing.getId());
-            log.debug("[LOCAL_INIT] 기존 어드민 클라이언트 삭제 후 재등록. clientId={}", ADMIN_CLIENT_ID);
+            log.debug("[LOCAL_INIT] 기존 Postman 클라이언트 삭제 후 재등록. clientId={}", POSTMAN_CLIENT_ID);
         }
 
         RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId(ADMIN_CLIENT_ID)
-                .clientName(ADMIN_CLIENT_NAME)
-                .clientSecret(passwordEncoder.encode(ADMIN_CLIENT_SECRET))
+                .clientId(POSTMAN_CLIENT_ID)
+                .clientName(POSTMAN_CLIENT_NAME)
+                .clientSecret(passwordEncoder.encode(POSTMAN_CLIENT_SECRET))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .scope("openid")
                 .scope("profile")
-                .redirectUri(ADMIN_REDIRECT_URI)
-                .postLogoutRedirectUri(ADMIN_POST_LOGOUT_URI)
+                .redirectUri(POSTMAN_REDIRECT_URI)
                 .clientSettings(ClientSettings.builder()
                         .requireProofKey(false)
                         .requireAuthorizationConsent(false)
                         .setting("loginPageUri", "/login")
                         .build())
                 .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofMinutes(30))
-                        .refreshTokenTimeToLive(Duration.ofHours(8))
+                        .accessTokenTimeToLive(Duration.ofDays(365))
+                        .refreshTokenTimeToLive(Duration.ofDays(365))
                         .build())
                 .build();
 
         registeredClientRepository.save(client);
 
-        log.info("[LOCAL_INIT] 어드민 클라이언트 등록 완료. clientId={}, secret={}", ADMIN_CLIENT_ID, ADMIN_CLIENT_SECRET);
+        log.info("[LOCAL_INIT] Postman 클라이언트 등록 완료. clientId={}, secret={}", POSTMAN_CLIENT_ID, POSTMAN_CLIENT_SECRET);
     }
+
+
 }
