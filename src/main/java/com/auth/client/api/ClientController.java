@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/clients")
+@RequestMapping("/api/v1/clients")
 public class ClientController {
 
     private final ClientManagement clientManagement;
@@ -32,7 +32,7 @@ public class ClientController {
             @Valid @RequestBody ClientCreateRequest request
     ) {
         SecretRevealResponse response = clientManagement.create(request);
-        URI location = URI.create("/api/clients/" + response.id());
+        URI location = URI.create("/api/v1/clients/" + response.id());
         return ResponseEntity.created(location).body(ApiResponse.ok(response));
     }
 

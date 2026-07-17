@@ -25,7 +25,7 @@ public class ResourceServerConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/api/v1/users/signup").permitAll()
-                        .requestMatchers("/api/clients/**").hasAuthority("SCOPE_client:manage")
+                        .requestMatchers("/api/v1/clients/**").hasAuthority("SCOPE_client:manage")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
