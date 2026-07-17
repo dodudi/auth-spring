@@ -29,7 +29,7 @@ pipeline {
 
         stage('Build Jar') {
             steps {
-                sh 'chmod +x gradlew && ./gradlew build -x test --no-daemon'
+                sh 'chmod +x gradlew && ./gradlew clean build -x test --no-daemon'
             }
         }
 
