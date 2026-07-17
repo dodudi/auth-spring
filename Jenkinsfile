@@ -9,8 +9,9 @@ pipeline {
         REGISTRY      = 'registry.rudy.it.kr'
         IMAGE_NAME    = "${REGISTRY}/auth-spring"
         REGISTRY_CRED = 'registry-rudy-credentials'
-        // 배포 대상 서버 — 원격 서버로 바뀌면 이 값만 교체하면 됨
-        DEPLOY_HOST     = '192.168.0.2'
+        // 배포 대상 서버 — 지금은 Jenkins와 같은 호스트라 host.docker.internal 사용,
+        // 원격 서버로 바뀌면 그 서버의 실제 주소로 교체하면 됨
+        DEPLOY_HOST     = 'host.docker.internal'
         // Jenkins Credentials(SSH Username with private key)에 등록한 배포 계정의 ID
         DEPLOY_SSH_CRED = 'deploy-server-ssh'
         // 배포 대상 서버의 docker-compose.yml이 위치한 디렉터리
