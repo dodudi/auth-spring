@@ -61,7 +61,9 @@ pipeline {
                         AUTH=$(printf "%s:%s" "$REGISTRY_USER" "$REGISTRY_PASS" | base64 -w0)
                         printf '{"auths":{"%s":{"auth":"%s"}}}' "$REGISTRY" "$AUTH" > "$DOCKER_CONFIG/config.json"
 
+                        mkdir -p "$PWD/.kaniko"
                         executor \
+                            --kaniko-dir="$PWD/.kaniko" \
                             --context="dir://$PWD" \
                             --dockerfile=Dockerfile \
                             --destination="$IMAGE_NAME:$IMAGE_TAG" \
