@@ -36,11 +36,13 @@ pipeline {
         // 빌드 전용 컨테이너를 띄워 처리 — docker.sock 마운트 전제)
         stage('Build Jar') {
             steps {
-                script {
-                    docker.image('eclipse-temurin:21-jdk-jammy').inside('-v gradle-cache:/root/.gradle') {
-                        sh 'chmod +x gradlew && ./gradlew build -x test --no-daemon'
-                    }
-                }
+                sh '''
+                    docker run --rm \
+                        -v "$PWD":/workspace -w /workspace \
+                        -v gradle-cache:/root/.gradle \
+                        eclipse-temurin:21-jdk-jammy \
+                        sh -c "chmod +x gradlew && ./gradlew build -x test --no-daemon"
+                '''
             }
         }
 
