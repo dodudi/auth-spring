@@ -28,7 +28,7 @@
 | `U001` | `USER_NOT_FOUND` | 404 | 사용자를 찾을 수 없음 |
 | `U002` | `EMAIL_ALREADY_EXISTS` | 409 | 이미 사용 중인 이메일 |
 | `U003` | `INVALID_PASSWORD` | 400 | 잘못된 비밀번호 |
-| `U004` | `EMAIL_NOT_VERIFIED` | 403 | 이메일 미인증 |
+| `U004` | *(결번 — 이메일 인증 기능 제거로 삭제됨, 재사용 금지)* | - | - |
 | `U005` | `ACCOUNT_SUSPENDED` | 403 | 정지된 계정 |
 | `U006` | `ACCOUNT_WITHDRAWN` | 403 | 탈퇴한 계정 |
 | `U007` | `ACCOUNT_LOCKED` | 423 | 잠긴 계정 (로그인 실패 초과) |

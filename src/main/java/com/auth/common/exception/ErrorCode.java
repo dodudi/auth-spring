@@ -19,7 +19,6 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "U002", "이미 사용 중인 이메일입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "U003", "비밀번호가 올바르지 않습니다."),
-    EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "U004", "이메일 인증이 필요합니다."),
     ACCOUNT_SUSPENDED(HttpStatus.FORBIDDEN, "U005", "정지된 계정입니다."),
     ACCOUNT_WITHDRAWN(HttpStatus.FORBIDDEN, "U006", "탈퇴한 계정입니다."),
     ACCOUNT_LOCKED(HttpStatus.LOCKED, "U007", "로그인 실패 횟수 초과로 계정이 잠겼습니다."),
