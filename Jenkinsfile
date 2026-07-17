@@ -11,8 +11,12 @@ pipeline {
         IMAGE_NAME    = "${REGISTRY}/auth-spring"
         // Jenkins Credentials(Username with password)에 등록한 registry 계정의 ID
         REGISTRY_CRED = 'registry-rudy-credentials'
-        // 애플리케이션용 docker-compose.yml — 서버 고정 경로 (DB/Redis용 compose와 별도)
-        COMPOSE_FILE  = '/opt/app/docker-compose.yml'
+        // 애플리케이션용 docker-compose.yml — 배포 대상 서버의 고정 경로 (DB/Redis용 compose와 별도)
+        COMPOSE_FILE  = '/workspace/auth-spring/application'
+        // 배포 대상 서버 — 지금은 Jenkins와 같은 서버지만, 원격 서버로 바뀌어도 이 값만 교체하면 됨
+        DEPLOY_HOST     = '192.168.0.2'
+        // Jenkins Credentials(SSH Username with private key)에 등록한 배포 계정의 ID
+        DEPLOY_SSH_CRED = 'deploy-server-ssh'
     }
 
     options {
@@ -71,12 +75,18 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // 서버에 이미 배치된 docker-compose.yml을 재기동 — 레포에는 없음
-                sh '''
-                    docker compose -f "$COMPOSE_FILE" pull
-                    docker compose -f "$COMPOSE_FILE" up -d
-                    docker image prune -f
-                '''
+                // 배포 대상 서버에 SSH로 접속해 명령만 실행 — docker.sock 마운트에 의존하지 않으므로
+                // 대상이 원격 서버로 바뀌어도 DEPLOY_HOST/DEPLOY_SSH_CRED만 바꾸면 됨
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: "${DEPLOY_SSH_CRED}",
+                    keyFileVariable: 'SSH_KEY',
+                    usernameVariable: 'SSH_USER'
+                )]) {
+                    sh '''
+                        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$SSH_USER@$DEPLOY_HOST" \
+                            "docker compose -f $COMPOSE_FILE pull && docker compose -f $COMPOSE_FILE up -d && docker image prune -f"
+                    '''
+                }
             }
         }
     }
