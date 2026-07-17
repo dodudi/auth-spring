@@ -36,27 +36,19 @@ pipeline {
         }
 
         // Dockerfile은 build/libs/*.jar를 그대로 복사하는 구조이므로
-        // 이미지 빌드 전에 jar를 먼저 만든다 (Jenkins 컨테이너 자체엔 JDK를 두지 않고
-        // 빌드 전용 컨테이너를 띄워 처리 — docker.sock 마운트 전제)
+        // 이미지 빌드 전에 jar를 먼저 만든다 (Jenkins 컨테이너에 설치된 JDK21로 직접 빌드)
         stage('Build Jar') {
             steps {
                 sh '''
-                    docker run --rm \
-                        -v "$PWD":/workspace -w /workspace \
-                        -v gradle-cache:/root/.gradle \
-                        eclipse-temurin:21-jdk-jammy \
-                        sh -c "chmod +x gradlew && ./gradlew build -x test --no-daemon"
+                    export JAVA_HOME=$(update-alternatives --list java | grep "java-21" | sed "s|/bin/java||")
+                    chmod +x gradlew && ./gradlew build -x test --no-daemon
                 '''
             }
         }
 
-        stage('Docker Build') {
-            steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
-            }
-        }
-
-        stage('Docker Push') {
+        // docker 데몬 없이 Kaniko executor로 이미지 빌드 + 레지스트리 push까지 한 번에 처리
+        // (docker.sock 마운트 불필요 — Jenkins 컨테이너 안에서 일반 프로세스로 실행)
+        stage('Build & Push Image') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: "${REGISTRY_CRED}",
@@ -64,10 +56,17 @@ pipeline {
                     passwordVariable: 'REGISTRY_PASS'
                 )]) {
                     sh '''
-                        echo "$REGISTRY_PASS" | docker login "$REGISTRY" -u "$REGISTRY_USER" --password-stdin
-                        docker push "$IMAGE_NAME:$IMAGE_TAG"
-                        docker push "$IMAGE_NAME:latest"
-                        docker logout "$REGISTRY"
+                        export DOCKER_CONFIG="$PWD/.docker"
+                        mkdir -p "$DOCKER_CONFIG"
+                        AUTH=$(printf "%s:%s" "$REGISTRY_USER" "$REGISTRY_PASS" | base64 -w0)
+                        printf '{"auths":{"%s":{"auth":"%s"}}}' "$REGISTRY" "$AUTH" > "$DOCKER_CONFIG/config.json"
+
+                        executor \
+                            --context="dir://$PWD" \
+                            --dockerfile=Dockerfile \
+                            --destination="$IMAGE_NAME:$IMAGE_TAG" \
+                            --destination="$IMAGE_NAME:latest" \
+                            --cleanup
                     '''
                 }
             }
@@ -92,9 +91,6 @@ pipeline {
     }
 
     post {
-        always {
-            sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
-        }
         success {
             echo "배포 완료: ${IMAGE_NAME}:${IMAGE_TAG}"
         }
