@@ -1,5 +1,7 @@
 package com.auth.security.application;
 
+import com.auth.common.exception.AuthException;
+import com.auth.common.exception.ErrorCode;
 import com.auth.user.domain.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,7 +103,7 @@ public class SocialOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private User createUser(String email, String nickname) {
         Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new IllegalStateException("ROLE_USER not found"));
+                .orElseThrow(() -> new AuthException(ErrorCode.INTERNAL_SERVER_ERROR));
         User user = User.builder()
                 .email(email)
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))

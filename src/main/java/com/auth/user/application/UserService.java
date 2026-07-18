@@ -33,7 +33,7 @@ public class UserService {
         }
 
         Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new IllegalStateException("ROLE_USER not found in database"));
+                .orElseThrow(() -> new AuthException(ErrorCode.INTERNAL_SERVER_ERROR));
 
         User user = User.builder()
                 .email(request.email())
