@@ -30,9 +30,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             String ip = HttpUtils.getClientIp(request);
             if (loginAttemptService.isIpBlocked(ip)) {
                 log.warn("[IP_BLOCKED] ip={}", ip);
-                response.setContentType("application/json;charset=UTF-8");
-                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.IP_BLOCKED));
+                HttpUtils.writeJson(response, objectMapper, HttpStatus.TOO_MANY_REQUESTS.value(), ApiResponse.fail(ErrorCode.IP_BLOCKED));
                 return;
             }
         }

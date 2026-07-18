@@ -31,9 +31,7 @@ public class JsonLogoutSuccessHandler implements LogoutSuccessHandler {
 
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(HttpServletResponse.SC_OK);
-            objectMapper.writeValue(response.getWriter(), ApiResponse.ok());
+            HttpUtils.writeJson(response, objectMapper, HttpServletResponse.SC_OK, ApiResponse.ok());
             return;
         }
 

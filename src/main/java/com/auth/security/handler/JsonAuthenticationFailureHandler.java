@@ -51,9 +51,7 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
 
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(errorCode.getHttpStatus().value());
-            objectMapper.writeValue(response.getWriter(), ApiResponse.fail(errorCode));
+            HttpUtils.writeJson(response, objectMapper, errorCode.getHttpStatus().value(), ApiResponse.fail(errorCode));
             return;
         }
 
