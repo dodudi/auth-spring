@@ -4,6 +4,7 @@ import com.auth.common.exception.AuthException;
 import com.auth.common.exception.ErrorCode;
 import com.auth.user.domain.Role;
 import com.auth.user.domain.User;
+import com.auth.user.dto.ChangePasswordRequest;
 import com.auth.user.dto.SignUpRequest;
 import com.auth.user.dto.UpdateNicknameRequest;
 import com.auth.user.dto.UserResponse;
@@ -59,6 +60,18 @@ public class UserService {
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         user.updateNickname(request.nickname());
         return UserResponse.from(user);
+    }
+
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new AuthException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        user.changePassword(passwordEncoder.encode(request.newPassword()));
+        log.info("[PASSWORD_CHANGE] userId={}", user.getId());
     }
 
     public void withdraw(UUID userId) {

@@ -69,6 +69,10 @@ public class User {
         this.nickname = nickname;
     }
 
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
     public void suspend() {
         this.status = UserStatus.SUSPENDED;
     }

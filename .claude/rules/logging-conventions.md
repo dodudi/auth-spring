@@ -30,6 +30,7 @@ log.info("signup success");                            // 식별 불가
 | `[LOGIN_ATTEMPT]` | WARN | 로그인 시도 횟수 기록 (Redis) |
 | `[USER_SIGNUP]` | INFO | 회원 가입 완료 |
 | `[USER_WITHDRAW]` | INFO | 회원 탈퇴 완료 |
+| `[PASSWORD_CHANGE]` | INFO | 비밀번호 변경 완료 |
 | `[SOCIAL_LOGIN]` | INFO | 소셜 로그인 처리 |
 | `[RATE_LIMIT]` | WARN | 로그인 시도 횟수 초과 차단 |
 

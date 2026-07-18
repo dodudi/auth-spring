@@ -4,6 +4,7 @@ import com.auth.common.exception.AuthException;
 import com.auth.user.domain.Role;
 import com.auth.user.domain.User;
 import com.auth.user.domain.UserStatus;
+import com.auth.user.dto.ChangePasswordRequest;
 import com.auth.user.dto.SignUpRequest;
 import com.auth.user.dto.UpdateNicknameRequest;
 import com.auth.user.dto.UserResponse;
@@ -121,6 +122,46 @@ class UserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userService.updateNickname(userId, new UpdateNicknameRequest("new-nickname")))
+                .isInstanceOf(AuthException.class);
+    }
+
+    @Test
+    void changePassword_현재_비밀번호_일치시_비밀번호_변경() {
+        // given
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().email("test@example.com").password("encoded-old").nickname("nickname").build();
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches("old-password", "encoded-old")).willReturn(true);
+        given(passwordEncoder.encode("new-password")).willReturn("encoded-new");
+
+        // when
+        userService.changePassword(userId, new ChangePasswordRequest("old-password", "new-password"));
+
+        // then
+        assertThat(user.getPassword()).isEqualTo("encoded-new");
+    }
+
+    @Test
+    void changePassword_현재_비밀번호_불일치시_INVALID_PASSWORD_예외_발생() {
+        // given
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().email("test@example.com").password("encoded-old").nickname("nickname").build();
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches("wrong-password", "encoded-old")).willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> userService.changePassword(userId, new ChangePasswordRequest("wrong-password", "new-password")))
+                .isInstanceOf(AuthException.class);
+    }
+
+    @Test
+    void changePassword_존재하지_않는_userId_입력시_USER_NOT_FOUND_예외_발생() {
+        // given
+        UUID userId = UUID.randomUUID();
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.changePassword(userId, new ChangePasswordRequest("old-password", "new-password")))
                 .isInstanceOf(AuthException.class);
     }
 
