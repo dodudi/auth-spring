@@ -61,9 +61,9 @@ public class UserController {
 
     @DeleteMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Void>> deleteMe(Authentication authentication) {
+    public ResponseEntity<Void> deleteMe(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         userService.withdraw(userId);
-        return ResponseEntity.ok(ApiResponse.ok());
+        return ResponseEntity.noContent().build();
     }
 }
