@@ -39,8 +39,7 @@ public class JsonAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
             loginAttemptService.clearFailures(email, ip);
         }
 
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
+        if (HttpUtils.isJsonRequest(request)) {
             HttpUtils.writeJson(response, objectMapper, HttpServletResponse.SC_OK, ApiResponse.ok());
             return;
         }

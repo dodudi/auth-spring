@@ -49,8 +49,7 @@ public class JsonAuthenticationFailureHandler implements AuthenticationFailureHa
             errorCode = ErrorCode.INVALID_CREDENTIALS;
         }
 
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
+        if (HttpUtils.isJsonRequest(request)) {
             HttpUtils.writeJson(response, objectMapper, errorCode.getHttpStatus().value(), ApiResponse.fail(errorCode));
             return;
         }

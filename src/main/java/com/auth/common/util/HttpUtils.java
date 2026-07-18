@@ -29,4 +29,9 @@ public final class HttpUtils {
         response.setStatus(status);
         objectMapper.writeValue(response.getWriter(), body);
     }
+
+    public static boolean isJsonRequest(HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.contains("application/json");
+    }
 }
