@@ -51,32 +51,32 @@ public class SimpleClientManagement implements ClientManagement {
 
     @Override
     public SecretRevealResponse create(ClientCreateRequest request) {
-        if (clientRepository.existsByClientId(request.getClientId())) {
+        if (clientRepository.existsByClientId(request.clientId())) {
             throw new AuthException(ErrorCode.CLIENT_ID_ALREADY_EXISTS);
         }
 
         String rawSecret = UUID.randomUUID().toString();
 
         RegisteredClient.Builder builder = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId(request.getClientId())
+                .clientId(request.clientId())
                 .clientSecret(passwordEncoder.encode(rawSecret))
-                .clientName(request.getClientName())
+                .clientName(request.clientName())
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
 
-        request.getGrantTypes().forEach(gt -> builder.authorizationGrantType(new AuthorizationGrantType(gt)));
-        request.getScopes().forEach(builder::scope);
-        parseUris(request.getRedirectUrisRaw()).forEach(builder::redirectUri);
-        parseUris(request.getPostLogoutRedirectUrisRaw()).forEach(builder::postLogoutRedirectUri);
+        request.grantTypes().forEach(gt -> builder.authorizationGrantType(new AuthorizationGrantType(gt)));
+        request.scopes().forEach(builder::scope);
+        parseUris(request.redirectUrisRaw()).forEach(builder::redirectUri);
+        parseUris(request.postLogoutRedirectUrisRaw()).forEach(builder::postLogoutRedirectUri);
 
         RegisteredClient client = builder
                 .clientSettings(ClientSettings.builder()
-                        .requireProofKey(request.isRequirePkce())
+                        .requireProofKey(request.requirePkce())
                         .requireAuthorizationConsent(true)
-                        .setting("loginPageUri", request.getLoginPageUri())
+                        .setting("loginPageUri", request.loginPageUri())
                         .build())
                 .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofMinutes(request.getAccessTokenTtlMinutes()))
-                        .refreshTokenTimeToLive(Duration.ofDays(request.getRefreshTokenTtlDays()))
+                        .accessTokenTimeToLive(Duration.ofMinutes(request.accessTokenTtlMinutes()))
+                        .refreshTokenTimeToLive(Duration.ofDays(request.refreshTokenTtlDays()))
                         .build())
                 .build();
 
@@ -92,18 +92,18 @@ public class SimpleClientManagement implements ClientManagement {
             throw new AuthException(ErrorCode.CLIENT_NOT_FOUND);
         }
 
-        Set<String> newUris = parseUris(request.getRedirectUrisRaw());
-        Set<String> newPostLogoutUris = parseUris(request.getPostLogoutRedirectUrisRaw());
+        Set<String> newUris = parseUris(request.redirectUrisRaw());
+        Set<String> newPostLogoutUris = parseUris(request.postLogoutRedirectUrisRaw());
 
         RegisteredClient updated = RegisteredClient.from(existing)
-                .clientName(request.getClientName())
+                .clientName(request.clientName())
                 .authorizationGrantTypes(types -> {
                     types.clear();
-                    request.getGrantTypes().forEach(gt -> types.add(new AuthorizationGrantType(gt)));
+                    request.grantTypes().forEach(gt -> types.add(new AuthorizationGrantType(gt)));
                 })
                 .scopes(scopes -> {
                     scopes.clear();
-                    scopes.addAll(request.getScopes());
+                    scopes.addAll(request.scopes());
                 })
                 .redirectUris(uris -> {
                     uris.clear();
@@ -114,13 +114,13 @@ public class SimpleClientManagement implements ClientManagement {
                     uris.addAll(newPostLogoutUris);
                 })
                 .clientSettings(ClientSettings.builder()
-                        .requireProofKey(request.isRequirePkce())
+                        .requireProofKey(request.requirePkce())
                         .requireAuthorizationConsent(true)
-                        .setting("loginPageUri", request.getLoginPageUri())
+                        .setting("loginPageUri", request.loginPageUri())
                         .build())
                 .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofMinutes(request.getAccessTokenTtlMinutes()))
-                        .refreshTokenTimeToLive(Duration.ofDays(request.getRefreshTokenTtlDays()))
+                        .accessTokenTimeToLive(Duration.ofMinutes(request.accessTokenTtlMinutes()))
+                        .refreshTokenTimeToLive(Duration.ofDays(request.refreshTokenTtlDays()))
                         .build())
                 .build();
 

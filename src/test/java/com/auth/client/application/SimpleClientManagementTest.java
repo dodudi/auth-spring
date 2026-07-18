@@ -112,8 +112,8 @@ class SimpleClientManagementTest {
     @Test
     void create_중복_clientId_입력시_CLIENT_ID_ALREADY_EXISTS_예외_발생() {
         // given
-        ClientCreateRequest request = new ClientCreateRequest();
-        request.setClientId("existing-client");
+        ClientCreateRequest request = new ClientCreateRequest(
+                "existing-client", null, null, null, null, null, null, false, 0, 0);
         given(clientRepository.existsByClientId("existing-client")).willReturn(true);
 
         // when & then
@@ -124,15 +124,10 @@ class SimpleClientManagementTest {
     @Test
     void create_유효한_요청_입력시_SecretRevealResponse_반환() {
         // given
-        ClientCreateRequest request = new ClientCreateRequest();
-        request.setClientId("new-client");
-        request.setClientName("New Client");
-        request.setGrantTypes(Set.of("authorization_code"));
-        request.setScopes(Set.of("openid"));
-        request.setRedirectUrisRaw("https://example.com/callback");
-        request.setLoginPageUri("https://example.com/login");
-        request.setAccessTokenTtlMinutes(30);
-        request.setRefreshTokenTtlDays(7);
+        ClientCreateRequest request = new ClientCreateRequest(
+                "new-client", "New Client", "https://example.com/login",
+                Set.of("authorization_code"), Set.of("openid"),
+                "https://example.com/callback", null, false, 30, 7);
 
         given(clientRepository.existsByClientId("new-client")).willReturn(false);
         given(passwordEncoder.encode(anyString())).willReturn("encoded-secret");
@@ -151,9 +146,11 @@ class SimpleClientManagementTest {
     void update_존재하지_않는_id_입력시_CLIENT_NOT_FOUND_예외_발생() {
         // given
         given(registeredClientRepository.findById(anyString())).willReturn(null);
+        ClientUpdateRequest request = new ClientUpdateRequest(
+                null, null, null, null, null, null, false, 0, 0);
 
         // when & then
-        assertThatThrownBy(() -> clientManagement.update("non-existent-id", new ClientUpdateRequest()))
+        assertThatThrownBy(() -> clientManagement.update("non-existent-id", request))
                 .isInstanceOf(AuthException.class);
     }
 
@@ -163,14 +160,10 @@ class SimpleClientManagementTest {
         String id = UUID.randomUUID().toString();
         RegisteredClient existing = createClientFixture(id, "test-client");
 
-        ClientUpdateRequest request = new ClientUpdateRequest();
-        request.setClientName("Updated Client");
-        request.setLoginPageUri("https://updated.com/login");
-        request.setGrantTypes(Set.of("authorization_code"));
-        request.setScopes(Set.of("openid", "profile"));
-        request.setRedirectUrisRaw("https://updated.com/callback");
-        request.setAccessTokenTtlMinutes(60);
-        request.setRefreshTokenTtlDays(14);
+        ClientUpdateRequest request = new ClientUpdateRequest(
+                "Updated Client", "https://updated.com/login",
+                Set.of("authorization_code"), Set.of("openid", "profile"),
+                "https://updated.com/callback", null, false, 60, 14);
 
         given(registeredClientRepository.findById(id)).willReturn(existing);
 
