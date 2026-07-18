@@ -36,14 +36,16 @@ com.example/
 │   └── util/                      정적 유틸 클래스
 │
 ├── order/                         주문 도메인
-│   ├── domain/                    Entity, Repository, Enum
+│   ├── domain/                    Entity, Enum
+│   ├── repository/                Repository 인터페이스
 │   ├── application/               Service (비즈니스 로직)
 │   ├── api/                       Controller
 │   └── dto/                       Request / Response 레코드
 │
 ├── payment/                       결제 도메인
 │   ├── config/                    도메인 전용 설정
-│   ├── domain/                    Repository 인터페이스
+│   ├── domain/                    Entity, Enum
+│   ├── repository/                Repository 인터페이스
 │   │   └── support/               Repository 커스텀 구현체
 │   ├── application/               Service 인터페이스 + 구현체
 │   ├── api/                       Controller
@@ -63,8 +65,9 @@ com.example/
 
 | 서브패키지 | 포함 대상 | 비고 |
 |-----------|----------|------|
-| `domain/` | Entity, Repository 인터페이스, Enum | JPA 영속성 경계 |
-| `domain/support/` | Repository 커스텀 구현체 | JPA 커스텀 구현체 및 순수 JDBC 구현체 모두 포함 |
+| `domain/` | Entity, Enum | JPA 영속성 경계 — Repository는 포함하지 않는다 |
+| `repository/` | Repository 인터페이스 | Entity와 분리하여 접근 계층을 명확히 구분 |
+| `repository/support/` | Repository 커스텀 구현체 | JPA 커스텀 구현체 및 순수 JDBC 구현체 모두 포함 |
 | `application/` | Service 인터페이스·구현체 | 비즈니스 로직 |
 | `api/` | Controller | HTTP 요청·응답 처리 |
 | `dto/` | Request·Response 레코드 | 레이어 간 데이터 전달 |
@@ -84,28 +87,32 @@ com.example/
 
 ## 인터페이스·구현체 위치 규칙
 
-Repository 인터페이스는 `domain/`에, 커스텀 구현체는 `domain/support/`에 둔다.
+Entity·Enum은 `domain/`에, Repository 인터페이스는 `repository/`에, 커스텀 구현체는 `repository/support/`에 둔다.
+`domain/`은 JPA 영속성 경계(Entity, Enum)만 담당하고, 저장소 접근 계층은 별도 패키지로 분리한다.
 
 ```
-payment/domain/
-├── OrderRepository.java           ← 인터페이스
-└── support/
-    └── OrderRepositoryImpl.java   ← 커스텀 구현체 (JPA 또는 JDBC)
+payment/
+├── domain/
+│   └── Order.java                 ← Entity
+├── repository/
+│   ├── OrderRepository.java       ← 인터페이스
+│   └── support/
+│       └── OrderRepositoryImpl.java   ← 커스텀 구현체 (JPA 또는 JDBC)
 ```
 
 **Spring Data JPA 커스텀 구현체** (`JpaRepository`를 확장하는 인터페이스의 추가 쿼리)는 Spring이 `{Interface}Impl` 명명 규칙으로 자동 연결한다.
 
-**순수 JDBC 구현체** (`JpaRepository`를 상속하지 않는 인터페이스)는 `domain/support/`에 위치하지만 Spring이 자동 연결하지 않으므로 직접 `@Component` 또는 `@Bean`으로 등록한다.
+**순수 JDBC 구현체** (`JpaRepository`를 상속하지 않는 인터페이스)는 `repository/support/`에 위치하지만 Spring이 자동 연결하지 않으므로 직접 `@Component` 또는 `@Bean`으로 등록한다.
 
 ```java
 // ✅ 순수 JDBC Repository — 명시적 빈 등록 필요
-// client/domain/ClientRepository.java
+// client/repository/ClientRepository.java
 public interface ClientRepository {
     List<ClientSummary> findAll();
     void deleteById(String id);
 }
 
-// client/domain/support/ClientRepositoryImpl.java
+// client/repository/support/ClientRepositoryImpl.java
 @Repository                      // @Component 또는 @Repository로 직접 등록
 @RequiredArgsConstructor
 public class ClientRepositoryImpl implements ClientRepository {
@@ -134,10 +141,14 @@ com.example.payment.application.impl.SimplePaymentService
 com.example.config.SecurityConfig
 com.example.config.PaymentConfig
 
-// ❌ 기술적 분류 패키지 금지
+// ❌ 기술적 분류 패키지 금지 — 여러 도메인의 코드를 한 곳에 모으는 최상위 버킷
 com.example.interfaces/
 com.example.services/
-com.example.repositories/
+com.example.repositories/         // 모든 도메인의 Repository를 한 패키지에 모으는 것은 금지
+
+// ✅ 도메인 하위의 repository/ 서브패키지는 허용 — 기능적 응집도 유지
+com.example.order.repository.OrderRepository
+com.example.payment.repository.PaymentRepository
 ```
 
 ---

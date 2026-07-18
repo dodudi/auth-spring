@@ -2,7 +2,7 @@ package com.auth.security.application;
 
 import com.auth.user.domain.Role;
 import com.auth.user.domain.User;
-import com.auth.user.domain.UserRepository;
+import com.auth.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

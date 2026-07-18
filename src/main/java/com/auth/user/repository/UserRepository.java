@@ -1,5 +1,6 @@
-package com.auth.user.domain;
+package com.auth.user.repository;
 
+import com.auth.user.domain.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

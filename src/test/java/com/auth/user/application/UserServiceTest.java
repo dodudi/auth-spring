@@ -2,13 +2,13 @@ package com.auth.user.application;
 
 import com.auth.common.exception.AuthException;
 import com.auth.user.domain.Role;
-import com.auth.user.domain.RoleRepository;
 import com.auth.user.domain.User;
-import com.auth.user.domain.UserRepository;
 import com.auth.user.domain.UserStatus;
 import com.auth.user.dto.SignUpRequest;
 import com.auth.user.dto.UpdateNicknameRequest;
 import com.auth.user.dto.UserResponse;
+import com.auth.user.repository.RoleRepository;
+import com.auth.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

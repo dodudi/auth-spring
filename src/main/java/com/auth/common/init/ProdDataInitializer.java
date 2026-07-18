@@ -1,9 +1,9 @@
 package com.auth.common.init;
 
 import com.auth.user.domain.Role;
-import com.auth.user.domain.RoleRepository;
 import com.auth.user.domain.User;
-import com.auth.user.domain.UserRepository;
+import com.auth.user.repository.RoleRepository;
+import com.auth.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

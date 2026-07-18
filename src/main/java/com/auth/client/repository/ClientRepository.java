@@ -1,4 +1,4 @@
-package com.auth.client.domain;
+package com.auth.client.repository;
 
 import com.auth.client.dto.ClientSummary;
 

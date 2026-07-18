@@ -1,5 +1,6 @@
-package com.auth.user.domain;
+package com.auth.user.repository;
 
+import com.auth.user.domain.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

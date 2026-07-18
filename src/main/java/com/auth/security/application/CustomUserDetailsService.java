@@ -1,7 +1,7 @@
 package com.auth.security.application;
 
-import com.auth.user.domain.UserRepository;
 import com.auth.user.domain.UserStatus;
+import com.auth.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.LockedException;

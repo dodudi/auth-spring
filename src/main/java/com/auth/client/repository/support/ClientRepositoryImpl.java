@@ -1,7 +1,7 @@
-package com.auth.client.domain.support;
+package com.auth.client.repository.support;
 
-import com.auth.client.domain.ClientRepository;
 import com.auth.client.dto.ClientSummary;
+import com.auth.client.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,21 +12,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClientRepositoryImpl implements ClientRepository {
 
-    private static final String FIND_ALL_SQL =
-            "SELECT id, client_id, client_name, authorization_grant_types, scopes, client_id_issued_at " +
-                    "FROM oauth2_registered_client ORDER BY client_id_issued_at DESC";
+    private static final String FIND_ALL_SQL = """
+            SELECT id, client_id, client_name, authorization_grant_types, scopes, client_id_issued_at
+            FROM oauth2_registered_client
+            ORDER BY client_id_issued_at DESC
+            """;
 
-    private static final String EXISTS_BY_CLIENT_ID_SQL =
-            "SELECT COUNT(*) FROM oauth2_registered_client WHERE client_id = ?";
+    private static final String EXISTS_BY_CLIENT_ID_SQL = """
+            SELECT COUNT(*) FROM oauth2_registered_client WHERE client_id = ?
+            """;
 
-    private static final String DELETE_AUTHORIZATION_BY_CLIENT_ID_SQL =
-            "DELETE FROM oauth2_authorization WHERE registered_client_id = ?";
+    private static final String DELETE_AUTHORIZATION_BY_CLIENT_ID_SQL = """
+            DELETE FROM oauth2_authorization WHERE registered_client_id = ?
+            """;
 
-    private static final String DELETE_CONSENT_BY_CLIENT_ID_SQL =
-            "DELETE FROM oauth2_authorization_consent WHERE registered_client_id = ?";
+    private static final String DELETE_CONSENT_BY_CLIENT_ID_SQL = """
+            DELETE FROM oauth2_authorization_consent WHERE registered_client_id = ?
+            """;
 
-    private static final String DELETE_BY_ID_SQL =
-            "DELETE FROM oauth2_registered_client WHERE id = ?";
+    private static final String DELETE_BY_ID_SQL = """
+            DELETE FROM oauth2_registered_client WHERE id = ?
+            """;
 
     private final JdbcTemplate jdbcTemplate;
 

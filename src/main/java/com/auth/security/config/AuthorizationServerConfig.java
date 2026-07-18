@@ -4,7 +4,7 @@ import com.auth.security.handler.ClientAwareLoginUrlAuthenticationEntryPoint;
 import com.auth.security.handler.CustomAuthorizationServerFailureHandler;
 import com.auth.security.property.AuthProperty;
 import com.auth.security.property.RsaProperty;
-import com.auth.user.domain.UserRepository;
+import com.auth.user.repository.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;

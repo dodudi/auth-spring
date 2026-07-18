@@ -2,7 +2,13 @@ package com.auth.security.application;
 
 import com.auth.common.exception.AuthException;
 import com.auth.common.exception.ErrorCode;
-import com.auth.user.domain.*;
+import com.auth.user.domain.Role;
+import com.auth.user.domain.SocialAccount;
+import com.auth.user.domain.SocialProvider;
+import com.auth.user.domain.User;
+import com.auth.user.repository.RoleRepository;
+import com.auth.user.repository.SocialAccountRepository;
+import com.auth.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

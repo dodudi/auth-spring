@@ -1,11 +1,11 @@
 package com.auth.client.application;
 
-import com.auth.client.domain.ClientRepository;
 import com.auth.client.dto.ClientCreateRequest;
 import com.auth.client.dto.ClientDetail;
 import com.auth.client.dto.ClientSummary;
 import com.auth.client.dto.ClientUpdateRequest;
 import com.auth.client.dto.SecretRevealResponse;
+import com.auth.client.repository.ClientRepository;
 import com.auth.common.exception.AuthException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

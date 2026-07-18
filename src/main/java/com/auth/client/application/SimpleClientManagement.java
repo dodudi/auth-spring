@@ -1,6 +1,6 @@
 package com.auth.client.application;
 
-import com.auth.client.domain.ClientRepository;
+import com.auth.client.repository.ClientRepository;
 import com.auth.client.dto.ClientCreateRequest;
 import com.auth.client.dto.ClientDetail;
 import com.auth.client.dto.ClientSummary;
