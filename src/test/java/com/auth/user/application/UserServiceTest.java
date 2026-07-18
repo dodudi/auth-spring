@@ -1,6 +1,7 @@
 package com.auth.user.application;
 
 import com.auth.common.exception.AuthException;
+import com.auth.security.application.TokenRevocationService;
 import com.auth.user.domain.Role;
 import com.auth.user.domain.User;
 import com.auth.user.domain.UserStatus;
@@ -37,6 +38,8 @@ class UserServiceTest {
     private RoleRepository roleRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private TokenRevocationService tokenRevocationService;
     @InjectMocks
     private UserService userService;
 
@@ -177,6 +180,7 @@ class UserServiceTest {
 
         // then
         assertThat(user.getStatus()).isEqualTo(UserStatus.WITHDRAWN);
+        verify(tokenRevocationService).revoke(userId);
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.auth.user.application;
 
 import com.auth.common.exception.AuthException;
 import com.auth.common.exception.ErrorCode;
+import com.auth.security.application.TokenRevocationService;
 import com.auth.user.domain.Role;
 import com.auth.user.domain.User;
 import com.auth.user.dto.ChangePasswordRequest;
@@ -27,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenRevocationService tokenRevocationService;
 
     public UserResponse signUp(SignUpRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -78,6 +80,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(ErrorCode.USER_NOT_FOUND));
         user.withdraw();
+        tokenRevocationService.revoke(userId);
         log.info("[USER_WITHDRAW] userId={}", user.getId());
     }
 }

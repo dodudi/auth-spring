@@ -33,6 +33,7 @@ log.info("signup success");                            // 식별 불가
 | `[PASSWORD_CHANGE]` | INFO | 비밀번호 변경 완료 |
 | `[SOCIAL_LOGIN]` | INFO | 소셜 로그인 처리 |
 | `[RATE_LIMIT]` | WARN | 로그인 시도 횟수 초과 차단 |
+| `[TOKEN_REVOKE]` | WARN | Redis 장애로 토큰 무효화 기록/조회 실패 (fail-open) |
 
 ---
 
