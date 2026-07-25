@@ -1,9 +1,7 @@
-.gradle
-src
-gradle
-gradlew
-gradlew.bat
-build.gradle
-settings.gradle
-*.md
+.git
 .gitignore
+.idea
+.vscode
+*.md
+build
+.gradle
