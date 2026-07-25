@@ -1,14 +1,14 @@
+FROM gradle:8.10-jdk21 AS build
+WORKDIR /src
+COPY . .
+RUN gradle clean build -x test --no-daemon
+
 FROM eclipse-temurin:21-jre-jammy
-
 WORKDIR /app
-
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser && \
     mkdir -p /app/logs && \
     chown -R appuser:appgroup /app/logs
 USER appuser
-
-COPY build/libs/*.jar app.jar
-
+COPY --from=build /src/build/libs/*.jar app.jar
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
